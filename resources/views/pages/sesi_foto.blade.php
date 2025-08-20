@@ -135,7 +135,7 @@
 async function startCamera() {
     try {
         // Request video tanpa memaksakan resolusi
-        stream = awaitnavigator.mediaDevices.getUserMedia({
+        stream = await navigator.mediaDevices.getUserMedia({
             video: {
                 width: { ideal: 3840 },   // minta 4K
                 height: { ideal: 2160 },
