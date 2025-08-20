@@ -11,18 +11,36 @@ return new class extends Migration
      */
     public function up(): void
     {
-          // tabel orders
-        Schema::create('orders', function (Blueprint $table) {
-            $table->id();
-            $table->string('order_code')->unique();
-            $table->string('email');
-            $table->foreignId('kategori_id')->constrained('kategori')->onDelete('cascade');
-            $table->foreignId('qr_id')->nullable()->constrained('qr_access')->nullOnDelete();
-            $table->integer('harga_paket');
-            $table->integer('total_harga');
-            $table->enum('status', ['pending', 'success'])->default('pending');
-            $table->timestamps();
-        });
+       // tabel orders
+Schema::create('orders', function (Blueprint $table) {
+    $table->id();
+    $table->string('order_code')->unique(); // kode unik order
+    $table->string('email'); // email customer
+    
+    // relasi ke kategori
+    $table->foreignId('kategori_id')
+          ->constrained('kategori')
+          ->onDelete('cascade'); 
+    
+    // relasi ke qr_access (boleh null)
+    $table->foreignId('qr_id')
+          ->nullable()
+          ->constrained('qr_access')
+          ->nullOnDelete();
+
+    // harga paket saat order dilakukan (jaga history)
+    $table->integer('harga_paket'); 
+
+    // total harga (jika ada tambahan, dll)
+    $table->integer('total_harga'); 
+
+    // status order
+    $table->enum('status', ['pending', 'success'])
+          ->default('pending');
+
+    $table->timestamps();
+});
+
     }
 
     /**
