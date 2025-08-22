@@ -54,6 +54,8 @@
                     </div>
                 </div>
             </template>
+            <x-filament::button color="success" x-on:click="saveAll()">Simpan Semua</x-filament::button>
+
         </div>
     </div>
 </div>
@@ -206,9 +208,21 @@ document.addEventListener('alpine:init', () => {
         },
 
         onMouseUp(e){
-            this.dragging = null;
-            this.resizing = null;
-        },
+    if(this.dragging || this.resizing){
+        const s = this.dragging ?? this.resizing;
+        // Auto save begitu mouse dilepas
+        this.$wire.updateLayout(s.id, {
+            x: Math.round(s.x),
+            y: Math.round(s.y),
+            width: Math.round(s.width),
+            height: Math.round(s.height),
+        });
+    }
+
+    this.dragging = null;
+    this.resizing = null;
+},
+
 
         renderCanvas(){
             const ctx = this.ctx;
@@ -248,21 +262,45 @@ document.addEventListener('alpine:init', () => {
             });
         },
 
-        async saveSlot(s){
-            await this.$wire.call('updateLayout', s.id, {
-                x: s.x, y: s.y, width: s.width, height: s.height
-            });
-        },
+       async saveSlot(s) {
+    const updated = {
+        x: Math.round(s.x),
+        y: Math.round(s.y),
+        width: Math.round(s.width),
+        height: Math.round(s.height)
+    };
 
-        async saveAll(){
-            for(const s of this.slots) await this.saveSlot(s);
-        },
+    // Simpan ke server (nilai master)
+    await this.$wire.call('updateLayout', s.id, updated);
+
+    // ❌ Jangan replace dengan data hasil render (sudah sama-sama master)
+    // ✅ Biarkan tetap konsisten, cukup update properti lokal
+    const idx = this.slots.findIndex(slot => slot.id === s.id);
+    if (idx !== -1) {
+        Object.assign(this.slots[idx], updated);
+    }
+
+    this.renderCanvas();
+},
+
+async saveAll() {
+    await this.$wire.set('slots', this.slots);
+    await this.$wire.call('saveAll');
+    this.renderCanvas();
+},
+
+
+
+
+
+       
+
 
         async addSlot(){
-            const id = await this.$wire.call('createSlot', this.frameId);
-            this.slots.push({id, slot_number:this.slots.length+1, x:20, y:20, width:300, height:450});
-            this.renderCanvas();
-        },
+    const newSlot = await this.$wire.createSlot();
+    this.slots.push(newSlot);
+    this.renderCanvas();
+},
 
         async removeSlot(s){
             await this.$wire.call('deleteSlot', s.id);
