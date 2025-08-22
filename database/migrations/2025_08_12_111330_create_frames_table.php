@@ -13,7 +13,8 @@ return new class extends Migration
     {
           Schema::create('frames', function (Blueprint $table) {
             $table->id();
-            $table->string('name');              // Nama frame, misal: Classic, Modern, dll
+            $table->string('name');
+            $table->integer('jumlah_layout');           
             $table->string('img_path');          // Path gambar frame (hiasan)
             $table->boolean('active')->default(true);  // Status frame aktif (default aktif)
             $table->timestamps();

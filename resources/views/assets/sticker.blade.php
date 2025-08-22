@@ -14,7 +14,7 @@
     $photos = \App\Models\CloudGallery::where('order_id', $order->id)->take(8)->get();
 @endphp
 
-<h1 class="text-3xl font-bold text-center mb-6">Pilih Sticker</h1>
+<h1 class="text-3xl font-serif font-bold text-center mb-6">Pilih Sticker</h1>
 
 <div class="max-w-8xl mx-auto grid grid-cols-2 gap-8">
     {{-- List sticker --}}

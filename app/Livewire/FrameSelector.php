@@ -15,10 +15,12 @@ class FrameSelector extends Component
 
     public function mount($orderCode, $layout, $selectedFrame = null)
     {
-        $this->frames = Frame::all();
         $this->orderCode = $orderCode;
         $this->layout = $layout;
         $this->selectedFrame = $selectedFrame;
+
+        // Ambil frame yang jumlah_layout sesuai pilihan
+        $this->frames = Frame::where('jumlah_layout', $layout)->get();
     }
 
     public function selectFrame($frameId)

@@ -9,7 +9,7 @@ class Frame extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'img_path', 'active'];
+    protected $fillable = ['name', 'img_path', 'active', 'jumlah_layout'];
 
     public function orders()
     {

@@ -1,17 +1,18 @@
 <div class="max-w-7xl mx-auto grid grid-cols-2 gap-8">
     {{-- List frame kiri --}}
-    <div class="overflow-y-auto max-h-[80vh] p-2 bg-white rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] flex flex-wrap gap-2">
-        @foreach($frames as $frame)
-            <div 
-                wire:click="selectFrame({{ $frame->id }})"
-                class="cursor-pointer rounded-lg transition duration-300
-                    {{ $selectedFrame == $frame->id ? 'border-blue-500 shadow-[2px_2px_0_0] shadow-black' : ' shadow-[2px_2px_0_0] shadow-black' }}"
-                style="width: 135px; height: 168px;" {{-- frame kiri --}}
-            >
-                <img src="{{ asset('storage/' . $frame->img_path) }}" alt="{{ $frame->name }}" class="w-full h-full object-cover rounded-md">
-            </div>
-        @endforeach
-    </div>
+   <div class="overflow-y-auto max-h-[80vh] p-2 bg-white rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] flex flex-wrap gap-2">
+    @foreach($frames as $frame)
+        <div 
+            wire:click="selectFrame({{ $frame->id }})"
+            class="cursor-pointer rounded-lg transition duration-300
+                {{ $selectedFrame == $frame->id ? 'border-blue-500 shadow-[2px_2px_0_0] shadow-black' : ' shadow-[2px_2px_0_0] shadow-black' }}"
+            style="width: 135px; height: 168px;"
+        >
+            <img src="{{ asset('storage/' . $frame->img_path) }}" alt="{{ $frame->name }}" class="w-full h-full object-cover rounded-md">
+        </div>
+    @endforeach
+</div>
+
 
     {{-- Preview kanan (sederhana, tanpa elevated) --}}
     <div class="p-4 flex flex-col items-center justify-between">

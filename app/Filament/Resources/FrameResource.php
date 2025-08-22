@@ -27,6 +27,11 @@ class FrameResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')->required()->label('Nama Frame'),
+                Forms\Components\TextInput::make('jumlah_layout')
+                    ->required()
+                    ->numeric()
+                    ->placeholder('Total foto dalam frame')
+                    ->label('Jumlah Layout'),
                 Forms\Components\FileUpload::make('img_path')
                     ->label('Gambar Frame')
                     ->image()
