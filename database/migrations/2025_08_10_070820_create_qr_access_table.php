@@ -14,7 +14,7 @@ return new class extends Migration
          // tabel qr_access
         Schema::create('qr_access', function (Blueprint $table) {
             $table->id();
-            $table->string('qr_id')->unique();
+            $table->string('url_cloud');
             $table->string('img_path');
             $table->timestamps();
         });

@@ -3,13 +3,21 @@
 @section('content')
 @php
     $orderCode = $order->order_code;
+    $slots = $frame->layouts->map(fn($l) => [
+        'id' => (int)$l->id,
+        'slot_number' => (int)$l->slot_number,
+        'x' => (int)$l->x,
+        'y' => (int)$l->y,
+        'width' => (int)$l->width,
+        'height' => (int)$l->height,
+    ])->values();
     $photos = \App\Models\CloudGallery::where('order_id', $order->id)->take(8)->get();
 @endphp
 
 <h1 class="text-3xl font-bold text-center mb-6">Pilih Sticker</h1>
 
 <div class="max-w-8xl mx-auto grid grid-cols-2 gap-8">
-    {{-- List sticker kiri --}}
+    {{-- List sticker --}}
     <div class="overflow-y-auto max-h-[80vh] p-2 bg-white rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] grid grid-cols-2 gap-1">
         @foreach($stickers as $sticker)
             <div 
@@ -23,9 +31,8 @@
         @endforeach
     </div>
 
-    {{-- Preview kanan --}}
+    {{-- Preview canvas --}}
     <div class="p-4 flex flex-col items-center justify-between">
-        {{-- Toggle frame/sticker --}}
         <div class="flex gap-4 mb-4">
             <label class="flex items-center gap-2">
                 <input type="checkbox" id="toggleFrame" checked>
@@ -37,12 +44,10 @@
             </label>
         </div>
 
-        {{-- Container preview canvas --}}
         <div class="border-2 border-gray-300 rounded-lg shadow-lg overflow-hidden" style="width: 300px; height: 500px;">
             <canvas id="previewCanvas" style="width:300px; height:450px; display:block;"></canvas>
         </div>
 
-        {{-- Form pilih sticker --}}
         <form method="POST" id="stickerForm" action="{{ route('sticker.export', ['orderCode' => $orderCode]) }}" class="w-full mt-4">
             @csrf
             <input type="hidden" name="sticker_id" id="sticker_id">
@@ -68,71 +73,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let stickersOnCanvas = [];
     let tempDraggingSticker = null;
-    let photoPositions = [];
-    let draggingPhoto = null;
     let draggingSticker = null;
     let offsetX = 0, offsetY = 0;
-    const layout = {{ $layout ?? 4 }};
 
-    async function loadImage(src){
-        return new Promise(resolve=>{
-            const img = new Image();
-            img.onload = ()=>resolve(img);
-            img.src = src;
-        });
-    }
-
-    // HD canvas
-    canvas.width = 1200;
-    canvas.height = 1800;
-
-    // Load photos
+    const slots = @json($slots);
     const photos = await Promise.all([
         @foreach($photos as $photo)
             loadImage("{{ asset('storage/' . $photo->img_path) }}"),
         @endforeach
     ]);
 
-    // Load frame
     const framePath = "{{ $order->frame ? asset('storage/' . $order->frame->img_path) : '' }}";
     const frameImg = framePath ? await loadImage(framePath) : null;
 
-    // Hitung posisi frame agar proporsional
+    // Canvas HD
+    canvas.width = 1200;
+    canvas.height = 1800;
+
+    // Hitung frame scale
     let frameScale = 1, frameX = 0, frameY = 0;
     if(frameImg){
         const scaleX = canvas.width / frameImg.width;
         const scaleY = canvas.height / frameImg.height;
         frameScale = Math.min(scaleX, scaleY);
-        frameX = (canvas.width - frameImg.width * frameScale) / 2;
-        frameY = (canvas.height - frameImg.height * frameScale) / 2;
+        frameX = (canvas.width - frameImg.width * frameScale)/2;
+        frameY = (canvas.height - frameImg.height * frameScale)/2;
     }
-
-    // Setup grid layout
-    let cols = 2;
-    if(layout === 4) cols = 2;
-    else if(layout === 6) cols = 3;
-    else if(layout === 7 || layout === 8) cols = 4;
-    const rows = Math.ceil(photos.length / cols);
-    const gap = 40;
-    const cellWidth = (canvas.width - gap*(cols+1)) / cols;
-    const cellHeight = (canvas.height - gap*(rows+1)) / rows;
-
-    // Susunan foto terbaru di belakang
-    photos.forEach((img, index) => {
-        const row = Math.floor(index / cols);
-        const col = index % cols;
-        const x = gap + col * (cellWidth + gap);
-        const y = gap + row * (cellHeight + gap);
-        const scale = Math.min(cellWidth / img.width, cellHeight / img.height);
-
-        photoPositions.unshift({
-            img,
-            x: x + (cellWidth - img.width*scale)/2 + frameX,
-            y: y + (cellHeight - img.height*scale)/2 + frameY,
-            width: img.width*scale,
-            height: img.height*scale
-        });
-    });
 
     // Drag & drop sticker
     window.dragSticker = function(event, path){
@@ -145,8 +111,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         img.src = `/storage/${path}`;
     }
 
-    canvas.addEventListener('dragover', e=> e.preventDefault());
-    canvas.addEventListener('drop', e=>{
+    canvas.addEventListener('dragover', e => e.preventDefault());
+    canvas.addEventListener('drop', e => {
         e.preventDefault();
         if(tempDraggingSticker){
             const rect = canvas.getBoundingClientRect();
@@ -160,8 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Drag foto & sticker
-    canvas.addEventListener('mousedown', e=>{
+    canvas.addEventListener('mousedown', e => {
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
@@ -174,45 +139,49 @@ document.addEventListener('DOMContentLoaded', async () => {
                 draggingSticker = s; offsetX = mouseX - s.x; offsetY = mouseY - s.y; return;
             }
         }
-        for(let i=photoPositions.length-1;i>=0;i--){
-            const p = photoPositions[i];
-            if(mouseX>=p.x && mouseX<=p.x+p.width && mouseY>=p.y && mouseY<=p.y+p.height){
-                draggingPhoto = p; offsetX = mouseX - p.x; offsetY = mouseY - p.y; break;
-            }
-        }
     });
 
-    canvas.addEventListener('mousemove', e=>{
-        if(draggingPhoto || draggingSticker){
+    canvas.addEventListener('mousemove', e => {
+        if(draggingSticker){
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             const mouseX = (e.clientX - rect.left)*scaleX;
             const mouseY = (e.clientY - rect.top)*scaleY;
 
-            if(draggingPhoto){ draggingPhoto.x = mouseX - offsetX; draggingPhoto.y = mouseY - offsetY; }
-            else if(draggingSticker){ draggingSticker.x = mouseX - offsetX; draggingSticker.y = mouseY - offsetY; }
+            draggingSticker.x = mouseX - offsetX;
+            draggingSticker.y = mouseY - offsetY;
 
             renderCanvas();
         }
     });
 
-    canvas.addEventListener('mouseup', e=>{ draggingPhoto=null; draggingSticker=null; });
-    canvas.addEventListener('mouseleave', e=>{ draggingPhoto=null; draggingSticker=null; });
+    canvas.addEventListener('mouseup', e => { draggingSticker = null; });
+    canvas.addEventListener('mouseleave', e => { draggingSticker = null; });
 
-    // Render
     function renderCanvas(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
         ctx.fillStyle="#ffffff";
         ctx.fillRect(0,0,canvas.width,canvas.height);
 
-        photoPositions.forEach(p=> ctx.drawImage(p.img,p.x,p.y,p.width,p.height));
+        // Render foto ke slot
+        slots.forEach((slot, index) => {
+            if(photos[index]){
+                const img = photos[index];
+                const scale = Math.min(slot.width/img.width, slot.height/img.height);
+                const x = slot.x + (slot.width - img.width*scale)/2;
+                const y = slot.y + (slot.height - img.height*scale)/2;
+                ctx.drawImage(img, x, y, img.width*scale, img.height*scale);
+            }
+        });
 
+        // Render frame
         if(frameImg && toggleFrame.checked)
             ctx.drawImage(frameImg, frameX, frameY, frameImg.width*frameScale, frameImg.height*frameScale);
 
+        // Render stickers
         if(toggleSticker.checked){
-            stickersOnCanvas.forEach(s=> ctx.drawImage(s.img,s.x,s.y,s.width,s.height));
+            stickersOnCanvas.forEach(s => ctx.drawImage(s.img, s.x, s.y, s.width, s.height));
             if(tempDraggingSticker) ctx.drawImage(tempDraggingSticker.img,tempDraggingSticker.x,tempDraggingSticker.y,tempDraggingSticker.width,tempDraggingSticker.height);
         }
 
@@ -221,8 +190,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     toggleFrame.addEventListener('change', renderCanvas);
     toggleSticker.addEventListener('change', renderCanvas);
+
     renderCanvas();
+
+    // Helper load image
+    function loadImage(src){
+        return new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.src = src;
+        });
+    }
 });
 </script>
-
 @endsection

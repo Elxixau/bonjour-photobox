@@ -11,7 +11,7 @@ class Order extends Model
     protected $fillable = [
         'order_code', 'kategori_id', 'qr_id',
         'harga_paket', 'total_harga', 'status','waktu',
-        'frame_id', 'sticker_id','filter_id'
+        'frame_id', 
     ];
 
     public function kategori()
@@ -39,15 +39,7 @@ class Order extends Model
     return $this->belongsTo(Frame::class);
 }
 
-public function sticker()
-{
-    return $this->belongsTo(Sticker::class);
-}
 
-public function filter()
-{
-    return $this->belongsTo(Filter::class);
-}
 
 
     // HAPUS RELASI OTOMATIS

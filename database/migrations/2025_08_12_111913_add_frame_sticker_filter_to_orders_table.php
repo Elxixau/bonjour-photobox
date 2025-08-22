@@ -14,11 +14,8 @@ return new class extends Migration
         Schema::table('orders', function (Blueprint $table) {
             $table->unsignedBigInteger('frame_id')->nullable()->after('status');
             $table->unsignedBigInteger('sticker_id')->nullable()->after('frame_id');
-            $table->unsignedBigInteger('filter_id')->nullable()->after('sticker_id');
 
             $table->foreign('frame_id')->references('id')->on('frames')->onDelete('set null');
-            $table->foreign('sticker_id')->references('id')->on('stickers')->onDelete('set null');
-            $table->foreign('filter_id')->references('id')->on('filters')->onDelete('set null');
         });
     }
 
@@ -29,9 +26,7 @@ return new class extends Migration
     {
          Schema::table('orders', function (Blueprint $table) {
             $table->dropForeign(['frame_id']);
-            $table->dropForeign(['sticker_id']);
-            $table->dropForeign(['filter_id']);
-            $table->dropColumn(['frame_id', 'sticker_id', 'filter_id']);
+            $table->dropColumn(['frame_id']);
         });
     }
 };

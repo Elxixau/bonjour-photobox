@@ -40,16 +40,21 @@ class AssetController extends Controller
             'layout' => $layout
         ]);
     }
-   public function sticker($orderCode)
-{
-    $order = Order::with('cloudGallery', 'frame') // photos = CloudGallery
-                  ->where('order_code', $orderCode)
-                  ->firstOrFail();
+    
+    public function sticker($orderCode)
+    {
+        $order = Order::with('cloudGallery', 'frame') // photos = CloudGallery
+                    ->where('order_code', $orderCode)
+                    ->firstOrFail();
 
-    $stickers = Sticker::all();
+        $stickers = Sticker::all();
 
-    return view('assets.sticker', compact('order', 'stickers'));
-}
+        // Ambil frame dari relasi order
+        $frame = $order->frame;
+
+        return view('assets.sticker', compact('order', 'stickers', 'frame'));
+    }
+
 
    public function export(Request $request, $orderCode)
 {

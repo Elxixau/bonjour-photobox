@@ -21,6 +21,11 @@ class KategoriResource extends Resource
 {
     protected static ?string $model = Kategori::class;
 
+    
+    protected static ?string $navigationGroup = 'Manajemen Sistem';
+    
+    protected static ?string $navigationLabel = 'Paket Photobox';
+    
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
@@ -32,13 +37,16 @@ class KategoriResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('harga')
                     ->numeric()
-                    ->required(),
+                    ->required()                    
+                    ->placeholder('Contoh: 30000'),
                 Forms\Components\TextInput::make('waktu')
                     ->required()
-                    ->maxLength(100),
+                    ->maxLength(100)
+                    ->placeholder('Contoh: 2'),
                 Forms\Components\TextInput::make('jumlah_cetak')
                     ->required()
-                    ->maxLength(100),
+                    ->maxLength(100)
+                    ->placeholder('Contoh: 1'),
                 Repeater::make('addons')
                 ->relationship()
                 ->label('Addons')
@@ -48,7 +56,8 @@ class KategoriResource extends Resource
                         ->maxLength(255),
                     TextInput::make('harga')
                         ->required()
-                        ->numeric(),
+                        ->numeric()
+                        ->placeholder('Contoh: 5000'),
                 ])
                 ->columns(2)
                 ->createItemButtonLabel('Tambah Addons'),

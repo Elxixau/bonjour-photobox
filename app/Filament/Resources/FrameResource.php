@@ -3,6 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\FrameResource\Pages;
+
+use App\Filament\Resources\FrameResource\Pages\FrameLayoutEditor;
 use App\Filament\Resources\FrameResource\RelationManagers;
 use App\Models\Frame;
 use Filament\Forms;
@@ -51,6 +53,10 @@ class FrameResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
             Tables\Actions\DeleteAction::make(),
+               Tables\Actions\Action::make('layout')
+                ->label('Atur Layout')
+                ->icon('heroicon-o-cursor-arrow-rays')
+                    ->url(fn (Frame $record) => FrameLayoutEditor::getUrl(['record' => $record->getKey()])), 
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -72,6 +78,7 @@ class FrameResource extends Resource
             'index' => Pages\ListFrames::route('/'),
             'create' => Pages\CreateFrame::route('/create'),
             'edit' => Pages\EditFrame::route('/{record}/edit'),
+            'layout' => Pages\FrameLayoutEditor::route('/{record}/layout'),
         ];
     }
 }

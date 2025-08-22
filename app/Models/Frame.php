@@ -15,4 +15,10 @@ class Frame extends Model
     {
         return $this->hasMany(Order::class);
     }
+
+    public function layouts()
+{
+    return $this->hasMany(FrameLayout::class);
+}
+
 }

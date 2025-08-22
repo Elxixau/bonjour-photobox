@@ -64,7 +64,7 @@
     <section
       class="relative rounded-lg border-2 border-black bg-white px-12 py-14 max-w-6xl w-full 
              shadow-black shadow-[10px_10px_0_0] hover:shadow-[12px_12px_0_0] 
-             transition-all flex flex-col items-center" style="background-image: url('{{ asset('image/line.png') }}'); background-size: cover; background-position: center; background-repeat: no-repeat;"
+             transition-all flex flex-col items-center"
     >
         @yield('content')
     </section>

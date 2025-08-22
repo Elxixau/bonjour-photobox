@@ -7,6 +7,15 @@
     $orderId = $order->id ?? '';
     $totalWaktu = isset($order->waktu) ? intval($order->waktu) * 60 : 300; // detik
 @endphp
+<style>
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.blink {
+  animation: blink 1s steps(1, start) infinite;
+}
+</style>
 
 <h1 id="info" class="text-3xl font-black font-serif mb-8 text-center">
     Foto: 0/{{ $layout }} Foto
@@ -30,12 +39,15 @@
 <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-8 p-4">
     <!-- Video Section -->
     <div class="relative flex-1 max-w-md mx-auto">
-        <div id="videoWrapper" class="bg-black rounded-lg overflow-hidden w-full max-h-[480px] relative">
-            <video id="video" autoplay playsinline muted class="rounded-lg object-cover w-full h-full"></video>
-            <div id="timer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full border-4 border-white text-white flex items-center justify-center text-2xl font-bold select-none bg-black bg-opacity-50">
-                {{ $durasi }}
-            </div>
-        </div>
+        <div id="videoWrapper" class="bg-black rounded-lg overflow-hidden w-full max-w-[360px] aspect-[3/4] relative mx-auto">
+    <video id="video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+    <div id="timer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
+        w-20 h-20 rounded-full border-4 border-white text-white flex items-center 
+        justify-center text-2xl font-bold select-none bg-black bg-opacity-50">
+        {{ $durasi }}
+    </div>
+</div>
+
     </div>
 
     <!-- Preview Section -->
@@ -111,7 +123,7 @@
         previewContainer.innerHTML = '';
         for (let i = 0; i < totalPhotos; i++) {
             const box = document.createElement('div');
-            box.className = `relative flex items-center justify-center bg-gray-100 rounded-xl shadow-lg ${isPortrait ? 'aspect-[3/4]' : 'aspect-[4/3]'} border-2 border-dashed border-gray-300`;
+            box.className = `relative flex items-center justify-center bg-gray-100 rounded-xl shadow-lg ${isPortrait ? 'aspect-[3/4]' : 'aspect-[3/4]'} border-2 border-dashed border-gray-300`;
 
             if (capturedImages[i]) {
                 const img = document.createElement('img');
@@ -178,43 +190,101 @@ async function startCamera() {
         });
     }
 
-  async function takeSnapshot() {
-     try {
-        // Pastikan video siap
+async function takeSnapshot() {
+    try {
         await new Promise(resolve => {
-            if(video.readyState >= 2) resolve();
+            if (video.readyState >= 2) resolve();
             else video.onloadedmetadata = () => resolve();
         });
 
-        // Ambil frame dari video
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // Ambil frame asli dari video
+        const srcCanvas = document.createElement('canvas');
+        srcCanvas.width = video.videoWidth;
+        srcCanvas.height = video.videoHeight;
+        const ctxSrc = srcCanvas.getContext('2d');
+        ctxSrc.drawImage(video, 0, 0, srcCanvas.width, srcCanvas.height);
 
-        // Canvas output menyesuaikan orientasi
+        // Output selalu portrait (3:4)
+        const outWidth = 900;   // bebas, asal 3:4
+        const outHeight = 1200; // 3:4
         const outputCanvas = document.createElement('canvas');
-        if(isPortrait){
-            outputCanvas.width = canvas.height; // swap untuk portrait
-            outputCanvas.height = canvas.width;
-        } else {
-            outputCanvas.width = canvas.width;
-            outputCanvas.height = canvas.height;
-        }
+        outputCanvas.width = outWidth;
+        outputCanvas.height = outHeight;
         const ctxOut = outputCanvas.getContext('2d');
 
         ctxOut.save();
-        if(isPortrait){
-            // Translate ke tengah canvas baru
-            ctxOut.translate(outputCanvas.width/2, outputCanvas.height/2);
-            ctxOut.rotate(90 * Math.PI / 180);
-            if(isMirror) ctxOut.scale(1, -1); // mirror horizontal
-            ctxOut.drawImage(canvas, -canvas.width/2, -canvas.height/2);
+
+        if (isPortrait) {
+             // Tetapkan output 3:4
+    const outWidth = 900;
+    const outHeight = 1200;
+    outputCanvas.width = outWidth;
+    outputCanvas.height = outHeight;
+    const ctxOut = outputCanvas.getContext('2d');
+
+    ctxOut.save();
+    ctxOut.translate(outWidth / 2, outHeight / 2);
+    ctxOut.rotate(90 * Math.PI / 180);
+    if (isMirror) ctxOut.scale(1, -1);
+
+    // Hitung crop biar pas rasio 3:4
+    const targetRatio = outHeight / outWidth; // 1.333...
+    const srcRatio = srcCanvas.width / srcCanvas.height;
+
+    let cropWidth, cropHeight, sx, sy;
+
+    if (srcRatio > targetRatio) {
+        // sumber terlalu lebar → crop kiri/kanan
+        cropHeight = srcCanvas.height;
+        cropWidth = cropHeight * targetRatio;
+        sx = (srcCanvas.width - cropWidth) / 2;
+        sy = 0;
+    } else {
+        // sumber terlalu tinggi → crop atas/bawah
+        cropWidth = srcCanvas.width;
+        cropHeight = cropWidth / targetRatio;
+        sx = 0;
+        sy = (srcCanvas.height - cropHeight) / 2;
+    }
+
+    // Gambar hasil crop (swap outHeight/outWidth karena sudah rotate)
+    ctxOut.drawImage(
+        srcCanvas,
+        sx, sy, cropWidth, cropHeight,
+        -outHeight / 2, -outWidth / 2,
+        outHeight, outWidth
+    );
+
+    ctxOut.restore();
         } else {
-            if(isMirror) ctxOut.scale(-1, -1);
-            ctxOut.drawImage(canvas, isMirror ? -canvas.width : 0, 0);
+            // Mode landscape → crop tengah jadi 3:4
+            const targetRatio = outWidth / outHeight; // 0.75
+            const srcRatio = srcCanvas.width / srcCanvas.height;
+
+            let cropWidth, cropHeight, sx, sy;
+
+            if (srcRatio > targetRatio) {
+                // Sumber terlalu lebar → crop lebar
+                cropHeight = srcCanvas.height;
+                cropWidth = cropHeight * targetRatio;
+                sx = (srcCanvas.width - cropWidth) / 2;
+                sy = 0;
+            } else {
+                // Sumber terlalu tinggi → crop tinggi
+                cropWidth = srcCanvas.width;
+                cropHeight = cropWidth / targetRatio;
+                sx = 0;
+                sy = (srcCanvas.height - cropHeight) / 2;
+            }
+
+            if (isMirror) {
+                ctxOut.translate(outWidth, 0);
+                ctxOut.scale(-1, 1);
+            }
+
+            ctxOut.drawImage(srcCanvas, sx, sy, cropWidth, cropHeight, 0, 0, outWidth, outHeight);
         }
+
         ctxOut.restore();
 
         // Konversi ke base64
@@ -231,9 +301,9 @@ async function startCamera() {
         });
 
         const data = await res.json();
-        if(data.success && data.url){
+        if (data.success && data.url) {
             const emptyIndex = capturedImages.findIndex(i => !i);
-            if(emptyIndex !== -1) capturedImages[emptyIndex] = data.url;
+            if (emptyIndex !== -1) capturedImages[emptyIndex] = data.url;
             renderPreview();
         }
 
@@ -249,12 +319,14 @@ async function startCamera() {
             if (photoIndex >= totalPhotos) return;
             countdown = durasi;
             timerEl.textContent = countdown;
+                  timerEl.classList.add("blink"); 
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 countdown--;
                 timerEl.textContent = countdown;
                 if (countdown <= 0) {
                     clearInterval(timerInterval);
+                     timerEl.classList.remove("blink");
                     takeSnapshot().then(() => {
                         photoIndex++;
                         captureLoop();

@@ -15,7 +15,7 @@ return new class extends Migration
 Schema::create('orders', function (Blueprint $table) {
     $table->id();
     $table->string('order_code')->unique(); // kode unik order
-    $table->string('email'); // email customer
+    $table->integer('waktu'); 
     
     // relasi ke kategori
     $table->foreignId('kategori_id')
@@ -37,7 +37,7 @@ Schema::create('orders', function (Blueprint $table) {
     // status order
     $table->enum('status', ['pending', 'success'])
           ->default('pending');
-
+    $table->integer('waktu'); 
     $table->timestamps();
 });
 
