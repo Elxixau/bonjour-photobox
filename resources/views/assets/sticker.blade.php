@@ -164,16 +164,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         ctx.fillStyle="#ffffff";
         ctx.fillRect(0,0,canvas.width,canvas.height);
 
-        // Render foto ke slot
-        slots.forEach((slot, index) => {
-            if(photos[index]){
-                const img = photos[index];
-                const scale = Math.min(slot.width/img.width, slot.height/img.height);
-                const x = slot.x + (slot.width - img.width*scale)/2;
-                const y = slot.y + (slot.height - img.height*scale)/2;
-                ctx.drawImage(img, x, y, img.width*scale, img.height*scale);
-            }
-        });
+      // Render foto ke slot (fit di dalam slot, tidak boleh melebihi slot)
+slots.forEach((slot, index) => {
+    if (photos[index]) {
+        const img = photos[index];
+
+        // skala pakai lebar penuh slot
+        const scale = slot.width / img.width;
+        const newWidth = slot.width;
+        const newHeight = img.height * scale;
+
+        // posisi awal (gambar ditengah horizontal)
+        const x = slot.x;
+        let y = slot.y + (slot.height - newHeight) / 2;
+
+        // kalau gambar lebih tinggi dari slot -> crop (biar full width tetap pas)
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(slot.x, slot.y, slot.width, slot.height); // batas slot
+        ctx.clip();
+
+        ctx.drawImage(img, x, y, newWidth, newHeight);
+
+        ctx.restore();
+    }
+});
+ 
+
 
         // Render frame
         if(frameImg && toggleFrame.checked)
