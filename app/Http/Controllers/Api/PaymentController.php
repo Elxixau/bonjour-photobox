@@ -80,6 +80,7 @@ class PaymentController extends Controller
 public function callback(Request $request)
 {
     $serverKey = config('midtrans.server_key');
+    $grossAmount = number_format((float)$request->gross_amount, 0, '.', ''); 
     $hashed = hash("sha512", $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
 
     if ($hashed === $request->signature_key) {
