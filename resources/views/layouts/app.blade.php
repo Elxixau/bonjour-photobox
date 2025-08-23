@@ -13,58 +13,58 @@
 </head>
 <body >
 
-<div class="min-h-screen flex flex-col items-center bg-gray-100" style="background-image: url('{{ asset('image/bonjour.png') }}'); background-size: cover; background-position: center; background-repeat: no-repeat;" >
-    <div class="p-4">
+<div class="min-h-screen flex flex-col justify-center items-center bg-gray-100" style="background-image: url('{{ asset('image/bgBonjour.jpg') }}'); background-size: cover; background-position: center; background-repeat: no-repeat;" >
+    <div class=" x-4">
         
     {{-- Navbar Elevated --}}
-  <nav
-  class="relative rounded-lg border-2 border-black bg-white px-6 py-10 mb-10 w-full max-w-6xl 
-         shadow-black shadow-[8px_8px_0_0] flex items-center flex-wrap gap-6 min-h-[100px]"
->
-    {{-- Logo kiri --}}
-    <div class="relative md:text-5xl text-3xl px-6 md:px-2 py-3 font-extrabold md:mr-2 mr-8 font-serif">
-        Bonjour
-    </div>
+    <nav
+        class="relative rounded-lg border-2 border-black bg-white px-6 py-10 mb-10 w-full max-w-6xl 
+        shadow-black shadow-[8px_8px_0_0] flex items-center flex-wrap gap-6 min-h-[100px]"
+    >
+        {{-- Logo kiri --}}
+        <div class="relative lg:text-5xl text-4xl px-6 md:px-2 py-3 font-extrabold md:mr-2 mr-8 font-serif">
+            Bonjour
+        </div>
 
-    {{-- Menu label statis dengan kondisi aktif --}}
-    <a href="{{ route('panduan') }}" 
-       class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
-              {{ request()->routeIs('panduan') ? 'bg-black text-white' : '' }}">
-        Panduan
-    </a>
+        {{-- Menu label statis dengan kondisi aktif --}}
+        <a href="{{ route('panduan') }}" 
+        class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
+                {{ request()->routeIs('panduan') ? 'bg-black text-white' : '' }}">
+            Panduan
+        </a>
 
-    <a href="{{ route('payment.index') }}" 
-       class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
-              {{ request()->routeIs('payment.*') ? 'bg-black text-white' : '' }}">
-        Pembayaran
-    </a>
+        <a href="{{ route('payment.index') }}" 
+        class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
+                {{ request()->routeIs('payment.*') ? 'bg-black text-white' : '' }}">
+            Pembayaran
+        </a>
 
-    <a href="{{ route('frame.choose', ['orderCode' => 1, 'layout' => 'default']) }}" 
-       class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
-              {{ request()->routeIs('frame.*') ? 'bg-black text-white' : '' }}">
-        Pilih Frame
-    </a>
+        <a href="{{ route('frame.choose', ['orderCode' => 1, 'layout' => 'default']) }}" 
+        class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
+                {{ request()->routeIs('frame.*') ? 'bg-black text-white' : '' }}">
+            Pilih Frame
+        </a>
 
-    <a href="{{ route('sesi-foto.show', ['orderCode' => 1]) }}" 
-       class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
-              {{ request()->routeIs('sesi-foto.*') ? 'bg-black text-white' : '' }}">
-        Sesi Foto
-    </a>
+        <a href="{{ route('sesi-foto.show', ['orderCode' => 1]) }}" 
+        class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
+                {{ request()->routeIs('sesi-foto.*') ? 'bg-black text-white' : '' }}">
+            Sesi Foto
+        </a>
 
-<a href="{{ route('sticker.index', ['orderCode' => 1]) }}" 
-   class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
-          {{ request()->routeIs('sticker.*') ? 'bg-black text-white' : '' }}">
-    Edit Foto
-</a>
+        <a href="{{ route('sticker.index', ['orderCode' => 1]) }}" 
+        class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
+                {{ request()->routeIs('sticker.*') ? 'bg-black text-white' : '' }}">
+            Edit Foto
+        </a>
 
-</nav>
+    </nav>
 
 
     {{-- Section Elevated --}}
     <section
-      class="relative rounded-lg border-2 border-black bg-white px-12 py-14 max-w-6xl w-full 
-             shadow-black shadow-[10px_10px_0_0] hover:shadow-[12px_12px_0_0] 
-             transition-all flex flex-col items-center"
+        class="relative rounded-lg border-2 border-black bg-white px-12 py-14 max-w-6xl w-full 
+        shadow-black shadow-[10px_10px_0_0] hover:shadow-[12px_12px_0_0] 
+        transition-all flex flex-col items-center"     
     >
         @yield('content')
     </section>
