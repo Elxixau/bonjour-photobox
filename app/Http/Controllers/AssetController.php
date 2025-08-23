@@ -41,19 +41,29 @@ class AssetController extends Controller
         ]);
     }
     
-    public function sticker($orderCode)
-    {
-        $order = Order::with('cloudGallery', 'frame') // photos = CloudGallery
-                    ->where('order_code', $orderCode)
-                    ->firstOrFail();
+public function sticker($orderCode)
+{
+    $order = Order::with('cloudGallery', 'frame') // photos = CloudGallery
+                ->where('order_code', $orderCode)
+                ->firstOrFail();
 
-        $stickers = Sticker::all();
+    $stickers = Sticker::all();
 
-        // Ambil frame dari relasi order
-        $frame = $order->frame;
+    // Ambil frame dari relasi order
+    $frame = $order->frame;
 
-        return view('assets.sticker', compact('order', 'stickers', 'frame'));
-    }
+    // Tambahkan filters
+    $filters = [
+        (object)['name' => 'Normal', 'css_filter' => 'none'],
+        (object)['name' => 'Grayscale', 'css_filter' => 'grayscale(100%)'],
+        (object)['name' => 'Sepia', 'css_filter' => 'sepia(100%)'],
+        (object)['name' => 'Brightness', 'css_filter' => 'brightness(150%)'],
+        (object)['name' => 'Contrast', 'css_filter' => 'contrast(150%)'],
+        (object)['name' => 'Invert', 'css_filter' => 'invert(100%)'],
+    ];
+
+    return view('assets.sticker', compact('order', 'stickers', 'frame', 'filters'));
+}
 
 
    public function export(Request $request, $orderCode)
