@@ -7,6 +7,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{{config('app.name')}}</title>
       @vite('resources/css/app.css')
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 
      

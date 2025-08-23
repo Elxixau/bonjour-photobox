@@ -189,24 +189,20 @@ async function startCamera() {
             img.src = url;
         });
     }
-
 async function takeSnapshot() {
     try {
-        await new Promise(resolve => {
-            if (video.readyState >= 2) resolve();
-            else video.onloadedmetadata = () => resolve();
-        });
+        if (!imageCapture) {
+            console.warn("ImageCapture tidak tersedia, fallback ke canvas");
+            return; // Bisa juga fallback ke metode lama kalau mau
+        }
 
-        // Ambil frame asli dari video
-        const srcCanvas = document.createElement('canvas');
-        srcCanvas.width = video.videoWidth;
-        srcCanvas.height = video.videoHeight;
-        const ctxSrc = srcCanvas.getContext('2d');
-        ctxSrc.drawImage(video, 0, 0, srcCanvas.width, srcCanvas.height);
+        // Ambil foto native dari kamera
+        const blob = await imageCapture.takePhoto();
+        const img = await loadImageFromBlob(blob);
 
         // Output selalu portrait (3:4)
-        const outWidth = 900;   // bebas, asal 3:4
-        const outHeight = 1200; // 3:4
+        const outWidth = 900;
+        const outHeight = 1200;
         const outputCanvas = document.createElement('canvas');
         outputCanvas.width = outWidth;
         outputCanvas.height = outHeight;
@@ -215,66 +211,50 @@ async function takeSnapshot() {
         ctxOut.save();
 
         if (isPortrait) {
-             // Tetapkan output 3:4
-    const outWidth = 900;
-    const outHeight = 1200;
-    outputCanvas.width = outWidth;
-    outputCanvas.height = outHeight;
-    const ctxOut = outputCanvas.getContext('2d');
+            ctxOut.translate(outWidth / 2, outHeight / 2);
+            ctxOut.rotate(90 * Math.PI / 180);
+            if (isMirror) ctxOut.scale(1, -1);
 
-    ctxOut.save();
-    ctxOut.translate(outWidth / 2, outHeight / 2);
-    ctxOut.rotate(90 * Math.PI / 180);
-    if (isMirror) ctxOut.scale(1, -1);
-
-    // Hitung crop biar pas rasio 3:4
-    const targetRatio = outHeight / outWidth; // 1.333...
-    const srcRatio = srcCanvas.width / srcCanvas.height;
-
-    let cropWidth, cropHeight, sx, sy;
-
-    if (srcRatio > targetRatio) {
-        // sumber terlalu lebar → crop kiri/kanan
-        cropHeight = srcCanvas.height;
-        cropWidth = cropHeight * targetRatio;
-        sx = (srcCanvas.width - cropWidth) / 2;
-        sy = 0;
-    } else {
-        // sumber terlalu tinggi → crop atas/bawah
-        cropWidth = srcCanvas.width;
-        cropHeight = cropWidth / targetRatio;
-        sx = 0;
-        sy = (srcCanvas.height - cropHeight) / 2;
-    }
-
-    // Gambar hasil crop (swap outHeight/outWidth karena sudah rotate)
-    ctxOut.drawImage(
-        srcCanvas,
-        sx, sy, cropWidth, cropHeight,
-        -outHeight / 2, -outWidth / 2,
-        outHeight, outWidth
-    );
-
-    ctxOut.restore();
-        } else {
-            // Mode landscape → crop tengah jadi 3:4
-            const targetRatio = outWidth / outHeight; // 0.75
-            const srcRatio = srcCanvas.width / srcCanvas.height;
+            // hitung crop sesuai rasio 3:4
+            const targetRatio = outHeight / outWidth;
+            const srcRatio = img.width / img.height;
 
             let cropWidth, cropHeight, sx, sy;
 
             if (srcRatio > targetRatio) {
-                // Sumber terlalu lebar → crop lebar
-                cropHeight = srcCanvas.height;
+                cropHeight = img.height;
                 cropWidth = cropHeight * targetRatio;
-                sx = (srcCanvas.width - cropWidth) / 2;
+                sx = (img.width - cropWidth) / 2;
                 sy = 0;
             } else {
-                // Sumber terlalu tinggi → crop tinggi
-                cropWidth = srcCanvas.width;
+                cropWidth = img.width;
                 cropHeight = cropWidth / targetRatio;
                 sx = 0;
-                sy = (srcCanvas.height - cropHeight) / 2;
+                sy = (img.height - cropHeight) / 2;
+            }
+
+            ctxOut.drawImage(
+                img,
+                sx, sy, cropWidth, cropHeight,
+                -outHeight / 2, -outWidth / 2,
+                outHeight, outWidth
+            );
+        } else {
+            const targetRatio = outWidth / outHeight;
+            const srcRatio = img.width / img.height;
+
+            let cropWidth, cropHeight, sx, sy;
+
+            if (srcRatio > targetRatio) {
+                cropHeight = img.height;
+                cropWidth = cropHeight * targetRatio;
+                sx = (img.width - cropWidth) / 2;
+                sy = 0;
+            } else {
+                cropWidth = img.width;
+                cropHeight = cropWidth / targetRatio;
+                sx = 0;
+                sy = (img.height - cropHeight) / 2;
             }
 
             if (isMirror) {
@@ -282,20 +262,20 @@ async function takeSnapshot() {
                 ctxOut.scale(-1, 1);
             }
 
-            ctxOut.drawImage(srcCanvas, sx, sy, cropWidth, cropHeight, 0, 0, outWidth, outHeight);
+            ctxOut.drawImage(img, sx, sy, cropWidth, cropHeight, 0, 0, outWidth, outHeight);
         }
 
         ctxOut.restore();
 
-        // Konversi ke base64
-        const base64data = outputCanvas.toDataURL('image/jpeg', 1.0);
+        // konversi ke base64
+        const base64data = outputCanvas.toDataURL("image/jpeg", 1.0);
 
-        // Upload ke server
+        // upload ke server
         const res = await fetch("{{ route('upload.photo') }}", {
-            method: 'POST',
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
             },
             body: JSON.stringify({ order_id: orderId, image: base64data })
         });
@@ -308,7 +288,7 @@ async function takeSnapshot() {
         }
 
     } catch (err) {
-        console.error(err);
+        console.error("Gagal capture pakai ImageCapture:", err);
     }
 }
 

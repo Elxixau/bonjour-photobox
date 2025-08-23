@@ -78,9 +78,17 @@
         // Trigger snap popup. @TODO: Replace TRANSACTION_TOKEN_HERE with your transaction token
         window.snap.pay('{{$snapToken}}', {
           onSuccess: function(result){
-            /* You may add your own implementation here */
-            window.location.href = '/invoice/{{$order->id}}'
-            alert("payment success!"); console.log(result);
+            Swal.fire({
+          icon: 'success',
+          title: 'Payment Success!',
+          text: 'Pembayaran berhasil, mengalihkan ke invoice...',
+          timer: 2000,
+          timerProgressBar: true,
+          showConfirmButton: false
+        }).then(() => {
+          window.location.href = '/invoice/{{$order->id}}';
+        });
+        console.log(result);
           },
           onPending: function(result){
             /* You may add your own implementation here */
