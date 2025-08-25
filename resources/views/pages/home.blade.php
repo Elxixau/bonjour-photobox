@@ -21,18 +21,18 @@
       <video id="video" autoplay playsinline muted class="w-full h-full object-cover"></video>
 
       <!-- Watermark -->
-<div class="absolute inset-x-0 top-0 z-20 pointer-events-none flex justify-center">
-  <div class="mt-2 text-center select-none" data-aos="fade-down">
-    <div class="font-serif uppercase font-extrabold tracking-widest text-white/90 text-xl
-                drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">
-      bonjour
-    </div>
-    <div class="font-serif text-white/85 text-sm md:text-base -mt-1
-                drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-      studiospace
-    </div>
-  </div>
-</div>
+      <div class="absolute inset-x-0 top-0 z-20 pointer-events-none flex justify-center">
+        <div class="mt-2 text-center select-none">
+          <div class="font-serif uppercase font-extrabold tracking-widest text-white/90 text-xl
+                      drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">
+            bonjour
+          </div>
+          <div class="font-serif text-white/85 text-sm md:text-base -mt-1
+                      drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+            studiospace
+          </div>
+        </div>
+      </div>
 
         <!-- Tombol Next di depan live preview bawah -->
   <a href="{{ route('panduan') }}" 
