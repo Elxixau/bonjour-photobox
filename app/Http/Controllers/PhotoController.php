@@ -55,30 +55,42 @@ public function uploadPhoto(Request $request)
         'id' => $gallery->id
     ]);
 }
-
-
-public function delete(Request $request)
+public function deleteSinglePhoto(Request $request)
 {
     $request->validate([
         'order_id' => 'required',
         'image_url' => 'required',
     ]);
 
+    // image_url datang dari client dalam bentuk URL (asset('storage/...'))
+    $relativePath = str_replace(asset('storage') . '/', '', $request->image_url);
+
     $photo = CloudGallery::where('order_id', $request->order_id)
-                ->where('img_path', str_replace(asset('storage') . '/', '', $request->image_url))
+                ->where('img_path', $relativePath)
                 ->first();
 
     if ($photo) {
-        if (Storage::disk('public')->exists($photo->img_path)) {
-            Storage::disk('public')->delete($photo->img_path);
+        // hapus file fisik dari storage
+        if (\Storage::disk('public')->exists($photo->img_path)) {
+            \Storage::disk('public')->delete($photo->img_path);
         }
+
+        // hapus record dari database
         $photo->delete();
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto berhasil dihapus'
+        ]);
     }
 
-    return response()->json(['success' => false]);
+    return response()->json([
+        'success' => false,
+        'message' => 'Foto tidak ditemukan'
+    ]);
 }
+
+
 public function deleteAll(Request $request)
 {
     $request->validate([

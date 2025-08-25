@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
 
+use Filament\Forms\Components\Select;
+
 class KategoriResource extends Resource
 {
     protected static ?string $model = Kategori::class;
@@ -47,6 +49,15 @@ class KategoriResource extends Resource
                     ->required()
                     ->maxLength(100)
                     ->placeholder('Contoh: 1'),
+                Select::make('orientasi')
+                    ->label('Orientasi Kamera')
+                    ->options([
+                        'portrait' => 'Portrait',
+                        'landscape' => 'Landscape',
+                    ])
+                    ->default('portrait')
+                    ->required(),
+
                 Repeater::make('addons')
                 ->relationship()
                 ->label('Addons')

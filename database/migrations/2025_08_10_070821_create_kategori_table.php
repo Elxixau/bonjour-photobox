@@ -18,6 +18,8 @@ return new class extends Migration
             $table->integer('harga');
             $table->string('waktu');
             $table->string('jumlah_cetak');
+            $table->enum('orientasi', ['portrait', 'landscape'])->default('portrait');
+
             $table->timestamps();
         });
     }

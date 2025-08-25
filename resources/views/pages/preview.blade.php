@@ -54,59 +54,52 @@ function showQRModal() {
 function closeQRModal() {
     document.getElementById('qrModal').classList.add('hidden');
 }
-// Cetak foto terakhir untuk kertas 4R (4x6 inch)
 function printPhoto() {
     const photoUrl = document.getElementById('finalPhoto').src;
-    const printWindow = window.open('', '', 'width=600,height=900'); // ukuran kasar untuk preview
+    const printWindow = window.open('', '', 'width=400,height=600');
 
     printWindow.document.write(`
         <html>
             <head>
+                <title>Preview Cetak 4R</title>
                 <style>
-                    @page { 
-                        size: 4in 6in; 
-                        margin: 0; 
-                    }
+                    @page { size: 4in 6in; margin: 0; }
                     html, body {
                         margin: 0;
                         padding: 0;
-                        height: 100%;
                         width: 100%;
+                        height: 100%;
+                        background: #fff;
                         display: flex;
                         justify-content: center;
                         align-items: center;
-                        background: #fff;
                     }
                     img {
+                        width: auto;
+                        height: 100%;
                         max-width: 100%;
-                        max-height: 100%;
-                        object-fit: contain;
                         display: block;
                     }
                 </style>
             </head>
             <body>
-                <img id="printImg" src="${photoUrl}" alt="Foto">
+                <img src="${photoUrl}" alt="Foto">
             </body>
         </html>
     `);
 
     printWindow.document.close();
 
-    // Tunggu gambar load sebelum cetak
     printWindow.onload = () => {
-        const img = printWindow.document.getElementById('printImg');
+        const img = printWindow.document.querySelector('img');
         if (img.complete) {
             printWindow.focus();
-            printWindow.print();
         } else {
-            img.onload = () => {
-                printWindow.focus();
-                printWindow.print();
-            }
+            img.onload = () => printWindow.focus();
         }
     }
 }
+
 
 </script>
 @endsection

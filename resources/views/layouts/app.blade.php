@@ -53,9 +53,9 @@
             Sesi Foto
         </a>
 
-        <a href="{{ route('sticker.index', ['orderCode' => 1]) }}" 
+        <a href="{{ route('filter.index', ['orderCode' => 1]) }}" 
         class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
-                {{ request()->routeIs('sticker.*') ? 'bg-black text-white' : '' }}">
+                {{ request()->routeIs('filter.*') ? 'bg-black text-white' : '' }}">
             Edit Foto
         </a>
 
@@ -74,5 +74,7 @@
     </div>
 </div>
 
+    {{-- JS --}}
+    @vite('resources/js/app.js')
 </body>
 </html>

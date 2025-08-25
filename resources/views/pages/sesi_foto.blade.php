@@ -6,6 +6,8 @@
     $layout = $layout ?? 4;
     $orderId = $order->id ?? '';
     $totalWaktu = isset($order->waktu) ? intval($order->waktu) * 60 : 300; // detik
+    
+    $orientasi = $orientasi ?? 'portrait'; // dari kategori
 @endphp
 <style>
 @keyframes blink {
@@ -83,7 +85,11 @@
     let timerInterval;
     let globalTimerInterval;
     let stream, track, imageCapture;
-    let isPortrait = true;
+ let isPortrait = "{{ $orientasi }}"?.trim() === 'portrait';
+ 
+
+    console.log("Orientasi dari DB:", "{{ $orientasi }}", "isPortrait:", isPortrait);
+
     let isMirror = true; // langsung mirror dari awal
     let capturedImages = Array(totalPhotos).fill(null);
 
@@ -118,32 +124,91 @@
         let scaleY = (isMirror && isPortrait) ? -1 : 1;
         video.style.transform = `rotate(${rotateDeg}deg) scale(${scaleX}, ${scaleY})`;
     }
+function renderPreview() {
+    previewContainer.innerHTML = '';
+    for (let i = 0; i < totalPhotos; i++) {
+        const box = document.createElement('div');
+        box.className = `relative flex items-center justify-center bg-gray-100 rounded-xl shadow-lg aspect-[3/4] border-2 border-dashed border-gray-300`;
 
-    function renderPreview() {
-        previewContainer.innerHTML = '';
-        for (let i = 0; i < totalPhotos; i++) {
-            const box = document.createElement('div');
-            box.className = `relative flex items-center justify-center bg-gray-100 rounded-xl shadow-lg ${isPortrait ? 'aspect-[3/4]' : 'aspect-[3/4]'} border-2 border-dashed border-gray-300`;
+        if (capturedImages[i]) {
+            const img = document.createElement('img');
+            img.src = capturedImages[i];
+            img.className = "w-full h-full object-cover rounded-xl shadow-lg";
+            box.appendChild(img);
 
-            if (capturedImages[i]) {
-                const img = document.createElement('img');
-                img.src = capturedImages[i];
-                img.className = "w-full h-full object-cover rounded-xl shadow-lg";
-                box.appendChild(img);
-            } else {
-                const numberCircle = document.createElement('div');
-                numberCircle.className = "w-16 h-16 flex items-center justify-center rounded-full border-4 border-gray-400 text-gray-500 text-2xl font-bold";
-                numberCircle.textContent = i + 1;
-                box.appendChild(numberCircle);
-            }
+            // Tombol retake per foto
+            const retakeBtn = document.createElement('button');
+            retakeBtn.textContent = "↺ Retake";
+            retakeBtn.className = "absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded";
+            retakeBtn.addEventListener('click', async () => {
+                const { isConfirmed } = await Swal.fire({
+                    title: 'lLakukan Retake?',
+                    text: "Foto akan dihapus!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, retake!',
+                    cancelButtonText: 'Batal',
+                });
+                if(!isConfirmed) return;
 
-            previewContainer.appendChild(box);
+                // Hapus dari server
+                try {
+                    const res = await fetch("{{ route('delete.single.photo') }}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                        },
+                        body: JSON.stringify({
+                            order_id: orderId,
+                            image_url: capturedImages[i]
+                        })
+                    });
+
+                    const data = await res.json();
+                    if(data.success){
+                        capturedImages[i] = null;
+                        renderPreview();
+
+                        // langsung ulangi capture untuk slot ini
+                        countdown = durasi;
+                        timerEl.textContent = countdown;
+                        clearInterval(timerInterval);
+                        timerInterval = setInterval(() => {
+                            countdown--;
+                            timerEl.textContent = countdown;
+                            if (countdown <= 0) {
+                                clearInterval(timerInterval);
+                                takeSnapshot().then(() => {
+                                    renderPreview();
+                                });
+                            }
+                        }, 1000);
+                    } else {
+                        alert("Gagal menghapus foto di server!");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Terjadi error saat retake foto.");
+                }
+            });
+
+            box.appendChild(retakeBtn);
+        } else {
+            const numberCircle = document.createElement('div');
+            numberCircle.className = "w-16 h-16 flex items-center justify-center rounded-full border-4 border-gray-400 text-gray-500 text-2xl font-bold";
+            numberCircle.textContent = i + 1;
+            box.appendChild(numberCircle);
         }
 
-        updateCounter();
-        resetBtn.classList.toggle('hidden', !capturedImages.some(i => i));
-        nextBtn.classList.toggle('hidden', !capturedImages.some(i => i));
+        previewContainer.appendChild(box);
     }
+
+    updateCounter();
+    resetBtn.classList.toggle('hidden', !capturedImages.some(i => i));
+    nextBtn.classList.toggle('hidden', !capturedImages.some(i => i));
+}
+
 async function startCamera() {
     try {
         // Request video tanpa memaksakan resolusi
@@ -310,7 +375,39 @@ async function takeSnapshot() {
     } catch (err) {
         console.error(err);
     }
+}async function startAutoCaptureWithReminder() {
+    await Swal.fire({
+        title: 'Siap untuk sesi foto?',
+        html: `<p>Foto akan diambil otomatis dalam <strong>${durasi}</strong> detik, setelah mulai.</p>`,
+        showCancelButton: true,
+        confirmButtonText: 'Mulai',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        focusConfirm: false,
+        customClass: {
+            popup: 'rounded-xl border-3 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 p-6',
+            title: 'text-xl font-serif font-semibold text-gray-900',
+            htmlContainer: 'text-gray-700 text-sm mt-2',
+            confirmButton: 'bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition ml-2',
+            cancelButton: 'bg-gray-200 text-gray-800 px-6 py-2 rounded-md hover:bg-gray-300 transition'
+        },
+        buttonsStyling: false,
+        allowOutsideClick: false,
+        allowEscapeKey: false
+    });
+
+    
+
+// update ikon sesuai orientasi awal
+    orientationIcon.style.transform = isPortrait ? 'rotate(0deg)' : 'rotate(90deg)';
+
+    startAutoCapture();
+    startCamera();
+    renderPreview();
+
+    startGlobalTimer();
 }
+
 
 
     function startAutoCapture() {
@@ -338,7 +435,15 @@ async function takeSnapshot() {
     }
 
     resetBtn.addEventListener('click', async ()=>{
-    if(!confirm("Yakin reset semua foto?")) return;
+         const { isConfirmed } = await Swal.fire({
+        title: 'Reset semua foto?',
+        text: "Semua foto akan dihapus!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, reset!',
+        cancelButtonText: 'Batal',
+    });
+    if(!isConfirmed) return;
 
     try {
         const res = await fetch("{{ route('delete.all.photos') }}", {
@@ -354,13 +459,14 @@ async function takeSnapshot() {
         if(data.success){
             capturedImages = Array(totalPhotos).fill(null);
             renderPreview();
+            await Swal.fire('Bersiap untuk capture ulang!', '', 'success');
             startAutoCapture(); // langsung mulai auto capture lagi
         } else {
-            alert("Gagal reset foto!");
+            await Swal.fire('Gagal reset foto!', '', 'error');
         }
     } catch (err) {
         console.error(err);
-        alert("Terjadi error saat reset");
+         await Swal.fire('erjadi error saat reset', '', 'error');
     }
 });
 
@@ -377,12 +483,12 @@ async function takeSnapshot() {
             alert("Belum ada foto yang diambil!");
             return;
         }
-        window.location.href = `/sticker/{{ $order->order_code }}`;
+        window.location.href = `/filter/{{ $order->order_code }}`;
     });
 
-    startCamera();
-    startGlobalTimer();
-    renderPreview();
+    
+    startAutoCaptureWithReminder();
+   
 })();
 </script>
 @endsection

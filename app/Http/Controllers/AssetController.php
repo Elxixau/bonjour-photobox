@@ -41,14 +41,11 @@ class AssetController extends Controller
         ]);
     }
     
-public function sticker($orderCode)
+public function filter($orderCode)
 {
     $order = Order::with('cloudGallery', 'frame') // photos = CloudGallery
                 ->where('order_code', $orderCode)
                 ->firstOrFail();
-
-    $stickers = Sticker::all();
-
     // Ambil frame dari relasi order
     $frame = $order->frame;
 
@@ -62,7 +59,7 @@ public function sticker($orderCode)
         (object)['name' => 'Invert', 'css_filter' => 'invert(100%)'],
     ];
 
-    return view('assets.sticker', compact('order', 'stickers', 'frame', 'filters'));
+    return view('assets.filter', compact('order', 'frame', 'filters'));
 }
 
 

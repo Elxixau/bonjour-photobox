@@ -9,7 +9,7 @@ class Kategori extends Model
     use HasFactory;
     
     protected $table = 'kategori'; 
-    protected $fillable = ['nama', 'harga', 'waktu', 'jumlah_cetak'];
+    protected $fillable = ['nama', 'harga', 'waktu', 'jumlah_cetak','orientasi'];
 
 // Relasi ke Addon (one-to-many)
     public function addons()

@@ -61,13 +61,13 @@ Route::get('/invoice/{order}', [PaymentController::class, 'invoice'])->name('pay
 */
 Route::get('/sesi-foto/{orderCode}/{layout?}', [PageController::class, 'sesiFoto'])->name('sesi-foto.show');
 Route::post('/upload-photo', [PhotoController::class, 'uploadPhoto'])->name('upload.photo');
-Route::post('/photo/upload-all', [PhotoController::class, 'uploadAll'])->name('photo.upload.all');
-//Route::post('/photo/delete', [PhotoController::class, 'delete'])->name('delete.photo');
+Route::post('/photo/upload-all', [PhotoController::class, 'uploadAll'])->name('photo.upload.all');// web.php
+Route::post('/delete-single-photo', [PhotoController::class, 'deleteSinglePhoto'])->name('delete.single.photo');
+
 Route::post('/photo/delete-all', [PhotoController::class, 'deleteAll'])->name('delete.all.photos');
 Route::post('/upload-final/{orderCode}', [PhotoController::class, 'uploadFinal'])->name('upload.final');
-Route::get('/sticker/{orderCode}', [AssetController::class, 'sticker'])->name('sticker.index');
+Route::get('/filter/{orderCode}', [AssetController::class, 'filter'])->name('filter.index');
 Route::post('/sticker/export/{orderCode}', [AssetController::class, 'export'])->name('sticker.export');
-Route::delete('/cloud-gallery/{id}', [CloudGalleryController::class, 'destroy'])->name('cloud-gallery.destroy');
 Route::get('/gallery/{order_code}', [PhotoController::class, 'show'])->name('gallery.show');
 Route::get('/order/{order_code}/qr-data', [PageController::class, 'getQrData'])->name('orders.qr-data');
 Route::get('/preview/{orderCode}', [PageController::class, 'preview'])->name('preview.show');
