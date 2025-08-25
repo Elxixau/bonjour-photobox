@@ -37,6 +37,10 @@
         <span>Total Waktu</span>
          <span>{{ $order->waktu }} menit</span>
     </div>
+     <div class="flex justify-between py-1">
+        <span>Jumlah Cetak</span>
+         <span>{{ $order->jumlah_cetak }} </span>
+    </div>
 </div>
 
 

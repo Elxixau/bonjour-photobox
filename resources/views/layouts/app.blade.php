@@ -24,37 +24,37 @@
         shadow-black shadow-[8px_8px_0_0] flex items-center flex-wrap gap-6 min-h-[100px]"
     >
         {{-- Logo kiri --}}
-        <div class="relative lg:text-5xl text-4xl px-6 md:px-2 py-3 font-extrabold md:mr-2 mr-8 font-serif">
+        <div class="relative lg:text-7xl text-5xl px-2 md:px-2 py-3 font-black md:mr-2 mr-8 font-serif">
             Bonjour
         </div>
 
         {{-- Menu label statis dengan kondisi aktif --}}
         <a href="{{ route('panduan') }}" 
-        class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
+        class="px-2  py-2 md:text-md text-2xl font-reguler rounded whitespace-nowrap
                 {{ request()->routeIs('panduan') ? 'bg-black text-white' : '' }}">
             Panduan
         </a>
 
         <a href="{{ route('payment.index') }}" 
-        class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
+        class="px-2  py-2 md:text-md text-2xl font-reguler rounded whitespace-nowrap
                 {{ request()->routeIs('payment.*') ? 'bg-black text-white' : '' }}">
             Pembayaran
         </a>
 
         <a href="{{ route('frame.choose', ['orderCode' => 1, 'layout' => 'default']) }}" 
-        class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
+        class="px-2  py-2 md:text-md text-2xl font-reguler rounded whitespace-nowrap
                 {{ request()->routeIs('frame.*') ? 'bg-black text-white' : '' }}">
             Pilih Frame
         </a>
 
         <a href="{{ route('sesi-foto.show', ['orderCode' => 1]) }}" 
-        class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
+        class="px-2  py-2 md:text-md text-2xl font-reguler rounded whitespace-nowrap
                 {{ request()->routeIs('sesi-foto.*') ? 'bg-black text-white' : '' }}">
             Sesi Foto
         </a>
 
         <a href="{{ route('filter.index', ['orderCode' => 1]) }}" 
-        class="px-2 lg:px-4 py-2 text-sm md:text-md font-semibold rounded whitespace-nowrap
+        class="px-2  py-2 md:text-md text-2xl font-reguler rounded whitespace-nowrap
                 {{ request()->routeIs('filter.*') ? 'bg-black text-white' : '' }}">
             Edit Foto
         </a>
@@ -64,7 +64,7 @@
 
     {{-- Section Elevated --}}
     <section
-        class="relative rounded-lg border-2 border-black bg-white px-12 py-14 max-w-6xl w-full 
+        class="relative  border-2 border-black bg-white px-12 py-14 max-w-6xl w-full 
         shadow-black shadow-[10px_10px_0_0] hover:shadow-[12px_12px_0_0] 
         transition-all flex flex-col items-center"     
     >

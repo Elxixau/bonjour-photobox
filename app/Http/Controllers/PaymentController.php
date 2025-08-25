@@ -40,6 +40,7 @@ class PaymentController extends Controller
 
     $totalWaktu = $kategori->waktu;
     $totalHarga = $kategori->harga;
+      $jumlahCetak = $kategori->jumlah_cetak; 
 
     $addonsInput = $request->input('addons', []);
     $addonsDetails = [];
@@ -54,6 +55,11 @@ class PaymentController extends Controller
             }
             $totalWaktu += $waktuPerQty * $qty;
             $totalHarga += $addon->harga * $qty;
+
+            // Kalau addon berupa cetakan, tambahkan ke jumlah cetak
+            if (stripos($addon->nama, 'cetak') !== false || stripos($addon->nama, 'print') !== false) {
+                $jumlahCetak += $qty;
+            }
 
             $addonsDetails[] = [
                 'addons_id' => $addon->id,
@@ -72,6 +78,7 @@ class PaymentController extends Controller
         'total_harga' => $totalHarga,
         'status' => 'pending',
         'waktu' => $totalWaktu,
+         'jumlah_cetak' => $jumlahCetak,
     ]);
 
     foreach ($addonsDetails as $detail) {

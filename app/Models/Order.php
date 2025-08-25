@@ -11,7 +11,7 @@ class Order extends Model
     protected $fillable = [
         'order_code', 'kategori_id', 'qr_id',
         'harga_paket', 'total_harga', 'status','waktu',
-        'frame_id', 
+        'frame_id', 'jumlah_cetak' ,
     ];
 
     public function kategori()
