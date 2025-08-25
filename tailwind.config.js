@@ -9,15 +9,7 @@ export default {
         './resources/**/*.js',
         './resources/**/*.vue',
     ],
-    safelist: [
-    'text-xl',
-    'text-sm',
-    'md:text-base',
-    'drop-shadow-lg',
-    'drop-shadow-md',
-    'aspect-[3/4]',
-    'aspect-[4/3]',
-  ],
+    
     theme: {
         extend: {
             fontFamily: {
