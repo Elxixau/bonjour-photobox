@@ -56,48 +56,60 @@ function closeQRModal() {
 }
 function printPhoto() {
     const photoUrl = document.getElementById('finalPhoto').src;
-    const printWindow = window.open('', '', 'width=400,height=600');
 
-    printWindow.document.write(`
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'absolute';
+    printFrame.style.width = '0px';
+    printFrame.style.height = '0px';
+    printFrame.style.border = '0';
+    document.body.appendChild(printFrame);
+
+    const doc = printFrame.contentWindow.document;
+    doc.open();
+    doc.write(`
         <html>
             <head>
-                <title>Preview Cetak 4R</title>
+                <title>Cetak Foto 4R</title>
                 <style>
                     @page { size: 4in 6in; margin: 0; }
+
                     html, body {
                         margin: 0;
                         padding: 0;
                         width: 100%;
                         height: 100%;
-                        background: #fff;
                         display: flex;
                         justify-content: center;
                         align-items: center;
+                        background: white;
                     }
+
                     img {
-                        width: auto;
-                        height: 100%;
                         max-width: 100%;
+                        max-height: 100%;
+                        width: auto;
+                        height: auto;
                         display: block;
+                        object-fit: contain; /* memastikan proporsional */
                     }
                 </style>
             </head>
             <body>
-                <img src="${photoUrl}" alt="Foto">
+                <img id="printImg" src="${photoUrl}" alt="Foto">
             </body>
         </html>
     `);
+    doc.close();
 
-    printWindow.document.close();
+    const printImg = doc.getElementById('printImg');
+    printImg.onload = () => {
+        printFrame.contentWindow.focus();
+        printFrame.contentWindow.print();
 
-    printWindow.onload = () => {
-        const img = printWindow.document.querySelector('img');
-        if (img.complete) {
-            printWindow.focus();
-        } else {
-            img.onload = () => printWindow.focus();
-        }
-    }
+        setTimeout(() => {
+            document.body.removeChild(printFrame);
+        }, 1000);
+    };
 }
 
 
