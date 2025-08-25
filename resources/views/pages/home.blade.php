@@ -23,7 +23,7 @@
       <!-- Watermark -->
       <div class="absolute inset-x-0 top-0 z-20 pointer-events-none flex justify-center">
         <div class="mt-2 text-center select-none">
-          <div class="font-serif uppercase font-extrabold tracking-widest text-white-90 text-xl
+          <div class="font-serif uppercase font-extrabold tracking-widest text-white text-xl drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]
                   ">
             bonjour
           </div>
