@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1 class="text-3xl font-black text-black font-serif mb-8">Panduan Penggunaan </h1>
+    <h1 class="text-3xl font-black text-white font-serif mb-8">Panduan Penggunaan </h1>
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 justify-items-center">
     @php
         $steps = [

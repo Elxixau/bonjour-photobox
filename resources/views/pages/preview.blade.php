@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<h1 class="text-3xl font-black font-serif text-center mb-8">
+<h1 class="text-3xl text-white font-black font-serif text-center mb-8">
     Preview Hasil Foto
 </h1>
 

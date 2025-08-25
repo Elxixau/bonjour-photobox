@@ -71,8 +71,12 @@
         <span>Rp {{ number_format($order->total_harga, 0, ',', '.') }}</span>
     </div>
 
-     <button id="pay-button" class="inline-block px-6 py-2 border-2 border-black rounded hover:bg-gray-100">
-  Pay!
+     
+
+</div>
+
+<button id="pay-button" class="mt-4  px-6 py-2 border-2 border-black bg-white rounded hover:bg-gray-100">
+  Bayar!
 </button>
 
     <script type="text/javascript">
@@ -109,6 +113,4 @@
         })
       });
     </script>
-
-</div>
 @endsection

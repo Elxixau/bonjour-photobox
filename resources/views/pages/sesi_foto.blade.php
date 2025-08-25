@@ -19,8 +19,8 @@
 }
 </style>
 
-<h1 id="info" class="text-3xl font-black font-serif mb-8 text-center">
-    Foto: 0/{{ $layout }} Foto
+<h1 id="info" class="text-3xl text-white font-black font-serif mb-8 text-center">
+   0/{{ $layout }} Foto
 </h1>
 
 <div class="absolute top-4 right-4 z-50 flex gap-2">
@@ -54,7 +54,7 @@
 
     <!-- Preview Section -->
     <div class="flex-1 max-w-md mx-auto flex flex-col">
-        <h2 class="text-xl font-semibold mb-4 text-center">Preview Foto</h2>
+        <h2 class="text-xl font-semibold mb-4 text-white text-center">Preview Foto</h2>
         <div id="previewContainer" class="grid grid-cols-2 gap-4 p-2"></div>
     </div>
 </div>

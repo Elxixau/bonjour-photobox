@@ -14,7 +14,7 @@
         <input type="hidden" name="kategori_id" value="{{ $kategori->id }}">
     </div>
 
-    <div class="text-2xl font-bold text-center font-serif pt-4 p-4">Add-ons</div>
+    <div class="text-2xl font-bold text-center text-white font-serif pt-4 p-4">Add-ons</div>
     {{-- Card Addons --}}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
     @foreach ($addons as $addon)

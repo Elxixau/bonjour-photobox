@@ -4,7 +4,7 @@
     <h1 class="text-3xl font-black text-black font-serif mb-8">Pembayaran</h1>
 
     {{-- Card Kategori --}}
-    <div class="bg-white shadow-lg rounded-xl p-6 mb-6">
+    <div class="bg-white shadow-lg rounded-xl p-6 mb- text-black">
         <h2 class="text-xl font-bold mb-2">{{ $kategori->nama }}</h2>
         <p class="text-gray-600 mb-4">Harga Paket: <span class="font-semibold">Rp {{ number_format($kategori->harga, 0, ',', '.') }}</span></p>
     </div>

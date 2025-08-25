@@ -56,7 +56,6 @@ public function filter($orderCode)
         (object)['name' => 'Sepia', 'css_filter' => 'sepia(100%)'],
         (object)['name' => 'Brightness', 'css_filter' => 'brightness(150%)'],
         (object)['name' => 'Contrast', 'css_filter' => 'contrast(150%)'],
-        (object)['name' => 'Invert', 'css_filter' => 'invert(100%)'],
     ];
 
     return view('assets.filter', compact('order', 'frame', 'filters'));
