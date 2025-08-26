@@ -59,12 +59,10 @@ async function startCamera() {
         const isPortrait = "{{ $orientasi }}" === 'portrait';
 
         if (isPortrait) {
-            // Rotasi 90deg, object-fit contain berbasis height
             video.style.transform = 'rotate(90deg)';
-            fitPortraitByHeight(settings);
-            window.addEventListener('resize', () => fitPortraitByHeight(settings));
+            fitPortraitFullHeight(settings);
+            window.addEventListener('resize', () => fitPortraitFullHeight(settings));
         } else {
-            // Landscape: tetap cover fullscreen
             video.style.transform = 'rotate(0deg)';
             video.style.width = '100%';
             video.style.height = '100%';
@@ -78,21 +76,20 @@ async function startCamera() {
 }
 
 /**
- * Sesuaikan portrait agar object-fit berdasarkan height
+ * Portrait: full height, width disesuaikan
  */
-function fitPortraitByHeight(settings) {
+function fitPortraitFullHeight(settings) {
     const container = document.getElementById('cameraContainer');
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
+    const ch = container.clientHeight;
 
-    const vidWidth = settings.width;
-    const vidHeight = settings.height;
+    // Swap karena rotate 90deg
+    const vidWidth = settings.height;
+    const vidHeight = settings.width;
 
-    // Swap karena sudah rotate 90deg
-    const scale = containerHeight / vidHeight;
-    video.style.height = containerHeight + 'px';
+    const scale = ch / vidHeight; // scale berdasarkan height
+    video.style.height = ch + 'px';
     video.style.width = vidWidth * scale + 'px';
-    video.style.objectFit = 'contain';
+    video.style.objectFit = 'contain'; // menjaga proporsi
 }
 
 window.addEventListener('DOMContentLoaded', startCamera);

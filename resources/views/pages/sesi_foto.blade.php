@@ -41,14 +41,15 @@
 <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-8 p-4">
     <!-- Video Section -->
     <div class="relative flex-1 max-w-md mx-auto">
-       <div id="videoWrapper" class="bg-black rounded-lg overflow-hidden w-full max-w-[480px] aspect-[3/4] mx-auto relative">
-    <video id="video" autoplay playsinline muted class="w-full h-full object-contain"></video>
-    <div id="timer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-        w-20 h-20 rounded-full border-4 border-white text-white flex items-center 
-        justify-center text-2xl font-bold select-none bg-black bg-opacity-50">
-        {{ $durasi }}
+<div id="videoWrapper" class="bg-black rounded-lg overflow-hidden w-full max-w-[480px] mx-auto"
+     style="aspect-ratio: {{ $orientasi == 'portrait' ? '3/4' : '4/3' }}">
+    <video id="video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+            <div id="timer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
+                w-20 h-20 rounded-full border-4 border-white text-white flex items-center 
+                justify-center text-2xl font-bold select-none bg-black bg-opacity-50">
+                {{ $durasi }}
+            </div>
     </div>
-</div>
 
     </div>
 
@@ -254,8 +255,7 @@ async function startCamera() {
             img.src = url;
         });
     }
-    
-   async function takeSnapshot() {
+    async function takeSnapshot() {
     try {
         if (video.readyState < 2) {
             await new Promise(resolve => video.onloadedmetadata = resolve);
@@ -264,25 +264,26 @@ async function startCamera() {
         let vidWidth = video.videoWidth;
         let vidHeight = video.videoHeight;
 
-        // Canvas mengikuti orientasi
+        const scaleFactor = 3; // scale up 3x
         const outputCanvas = document.createElement('canvas');
+
         if (isPortrait) {
-            outputCanvas.width = vidHeight;
-            outputCanvas.height = vidWidth;
+            outputCanvas.width = vidHeight * scaleFactor;
+            outputCanvas.height = vidWidth * scaleFactor;
         } else {
-            outputCanvas.width = vidWidth;
-            outputCanvas.height = vidHeight;
+            outputCanvas.width = vidWidth * scaleFactor;
+            outputCanvas.height = vidHeight * scaleFactor;
         }
+
         const ctx = outputCanvas.getContext('2d');
+        ctx.scale(scaleFactor, scaleFactor);
 
         ctx.save();
 
         if (isPortrait) {
-            // Pindahkan origin ke tengah canvas
-            ctx.translate(outputCanvas.width / 2, outputCanvas.height / 2);
+            ctx.translate(outputCanvas.width / (2*scaleFactor), outputCanvas.height / (2*scaleFactor));
             ctx.rotate(90 * Math.PI / 180);
             if (isMirror) ctx.scale(1, -1);
-            // drawImage di tengah canvas dengan ukuran proporsional
             ctx.drawImage(video, -vidWidth / 2, -vidHeight / 2, vidWidth, vidHeight);
         } else {
             if (isMirror) {
@@ -294,10 +295,10 @@ async function startCamera() {
 
         ctx.restore();
 
-        // Konversi ke Blob JPEG
+        // Konversi ke Blob JPEG kualitas maksimal
         const blob = await new Promise(resolve => outputCanvas.toBlob(resolve, 'image/jpeg', 1.0));
 
-        // Convert ke base64
+        // Convert ke base64 dan upload
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = async () => {
@@ -322,6 +323,7 @@ async function startCamera() {
         console.error(err);
     }
 }
+
 
 
 async function startAutoCaptureWithReminder() {
