@@ -30,23 +30,22 @@
         <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             @foreach ($photos as $photo)
                 <div class="relative rounded-xl overflow-hidden shadow-lg bg-white transform transition duration-300 hover:scale-105 active:scale-95 aspect-[6/4] group">
-                    <!-- Preview Thumbnail -->
                     <img 
-                        src="{{ asset('storage/photos/thumbs/' . $photo->img_path) }}" 
+                        src="{{ asset('storage/' . $photo->img_path) }}" 
                         alt="Foto {{ $loop->iteration }}" 
                         loading="lazy" 
                         class="w-full h-full object-cover"
                     />
                     <!-- Overlay tombol Download & Share -->
                     <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
-                        <!-- Download Original -->
-                        <a href="{{ asset('storage/photos/original/' . $photo->img_path) }}" 
+                        <!-- Download -->
+                        <a href="{{ asset('storage/' . $photo->img_path) }}" 
                            download="Foto_{{ $loop->iteration }}.jpg"
                            class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition">
                             Download
                         </a>
                         <!-- Share -->
-                        <button onclick="sharePhoto('{{ asset('storage/photos/original/' . $photo->img_path) }}')" 
+                        <button onclick="sharePhoto('{{ asset('storage/' . $photo->img_path) }}')" 
                            class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition">
                             Share
                         </button>
