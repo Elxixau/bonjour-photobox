@@ -11,41 +11,70 @@
 <header class="max-w-5xl mx-auto mb-8 text-center px-4">
     <h1 class="text-4xl font-extrabold tracking-tight mb-1">Galeri Foto</h1>
     <p class="text-gray-600 text-base sm:text-lg">
-{{ $order->order_code }}
+        Order: {{ $order->order_code }}
     </p>
-<div class="mb-4 p-4">
-    <p class="text-sm text-gray-600">
-        Penyimpanan berlaku dari 
-        <span class="font-semibold">{{ $startDate->format('d F Y H:i') }}</span>
-        sampai 
-        <span class="font-semibold">{{ $endDate->format('d F Y H:i') }}</span>
-    </p>
-</div>
+    <div class="mb-4 p-4">
+        <p class="text-sm text-gray-600">
+            Penyimpanan berlaku dari 
+            <span class="font-semibold">{{ $startDate->format('d F Y H:i') }}</span>
+            sampai 
+            <span class="font-semibold">{{ $endDate->format('d F Y H:i') }}</span>
+        </p>
+    </div>
+</header>
 
-    <main class="flex-grow max-w-6xl mx-auto w-full px-2 sm:px-6">
-        @if($photos->isEmpty())
-            <p class="text-center text-gray-500 text-lg py-20">Belum ada foto untuk order ini.</p>
-        @else
-           <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-    @foreach ($photos as $photo)
-        <div class="relative rounded-xl overflow-hidden shadow-lg bg-white cursor-pointer transform transition duration-300 hover:scale-105 active:scale-95 aspect-[6/4]">
-            <img 
-                src="{{ asset('storage/' . $photo->img_path) }}" 
-                alt="Foto {{ $loop->iteration }}" 
-                loading="lazy" 
-                class="w-full h-full object-cover"
-            />
+<main class="flex-grow max-w-6xl mx-auto w-full px-2 sm:px-6">
+    @if($photos->isEmpty())
+        <p class="text-center text-gray-500 text-lg py-20">Belum ada foto untuk order ini.</p>
+    @else
+        <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+            @foreach ($photos as $photo)
+                <div class="relative rounded-xl overflow-hidden shadow-lg bg-white transform transition duration-300 hover:scale-105 active:scale-95 aspect-[6/4] group">
+                    <img 
+                        src="{{ asset('storage/' . $photo->img_path) }}" 
+                        alt="Foto {{ $loop->iteration }}" 
+                        loading="lazy" 
+                        class="w-full h-full object-cover"
+                    />
+                    <!-- Overlay tombol Download & Share -->
+                    <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
+                        <!-- Download -->
+                        <a href="{{ asset('storage/' . $photo->img_path) }}" 
+                           download="Foto_{{ $loop->iteration }}.jpg"
+                           class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition">
+                            Download
+                        </a>
+                        <!-- Share -->
+                        <button onclick="sharePhoto('{{ asset('storage/' . $photo->img_path) }}')" 
+                           class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition">
+                            Share
+                        </button>
+                    </div>
+                </div>
+            @endforeach
         </div>
-    @endforeach
-</div>
+    @endif
+</main>
 
+<footer class="max-w-5xl mx-auto mt-16 text-center text-gray-400 text-sm select-none px-4 pb-6">
+    &copy; {{ date('Y') }} Your Company. All rights reserved.
+</footer>
 
-        @endif
-    </main>
-
-    <footer class="max-w-5xl mx-auto mt-16 text-center text-gray-400 text-sm select-none px-4 pb-6">
-        &copy; {{ date('Y') }} Your Company. All rights reserved.
-    </footer>
+<script>
+function sharePhoto(url) {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Foto Galeri',
+            text: 'Cek foto ini dari order {{ $order->order_code }}',
+            url: url
+        })
+        .then(() => console.log('Berhasil dibagikan'))
+        .catch((error) => console.error('Gagal share', error));
+    } else {
+        alert('Browser tidak mendukung fitur share. Silakan download foto.');
+    }
+}
+</script>
 
 </body>
 </html>
