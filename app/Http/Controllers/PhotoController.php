@@ -124,15 +124,15 @@ public function show($order_code)
 
 
 
-public function download($order_code, $path)
+public function download($order_code, $photo)
 {
-    $filePath = storage_path('app/public/' . $path);
+    $path = "cloud_gallery/{$order_code}/{$photo}";
 
-    if (!file_exists($filePath)) {
+    if (!Storage::disk('public')->exists($path)) {
         abort(404, 'File not found');
     }
 
-    return response()->download($filePath);
+    return Storage::disk('public')->download($path);
 }
 
 
