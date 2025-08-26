@@ -123,7 +123,6 @@ public function show($order_code)
 }
 
 
-
 public function download($order_code, $photo)
 {
     $path = "cloud_gallery/{$order_code}/{$photo}";
@@ -132,7 +131,7 @@ public function download($order_code, $photo)
         abort(404, 'File not found');
     }
 
-    return Storage::disk('public')->download($path);
+    return Storage::disk('public')->download($path, $photo);
 }
 
 

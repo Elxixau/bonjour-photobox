@@ -39,9 +39,10 @@
                     <!-- Overlay tombol Download & Share -->
                     <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
                         <!-- Download -->
-                            <a href="{{ route('gallery.download', ['order_code' => $order_code, 'photo' => $photo]) }}" download>
+                            <a href="{{ route('gallery.download', [$order_code, $photo]) }}" download="{{ $photo }}">
    Download
 </a>
+
 
 
                         <!-- Share -->
