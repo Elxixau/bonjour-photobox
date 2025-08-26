@@ -123,7 +123,6 @@ public function show($order_code)
 }
 
 
-use Illuminate\Support\Facades\Storage;
 
 public function download($order_code, $photo)
 {
