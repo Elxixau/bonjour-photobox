@@ -71,3 +71,5 @@ Route::post('/sticker/export/{orderCode}', [AssetController::class, 'export'])->
 Route::get('/gallery/{order_code}', [PhotoController::class, 'show'])->name('gallery.show');
 Route::get('/order/{order_code}/qr-data', [PageController::class, 'getQrData'])->name('orders.qr-data');
 Route::get('/preview/{orderCode}', [PageController::class, 'preview'])->name('preview.show');
+Route::get('/gallery/{order_code}/download/{photo}', [PhotoController::class, 'download'])
+    ->name('gallery.download');

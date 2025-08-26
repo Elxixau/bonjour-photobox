@@ -123,6 +123,22 @@ public function show($order_code)
 }
 
 
+use Illuminate\Support\Facades\Storage;
+
+public function download($order_code, $photo)
+{
+    $order = Order::where('order_code', $order_code)->firstOrFail();
+
+    // pastikan path sesuai dengan struktur penyimpanan
+    $filePath = "cloud_gallery/{$order->order_code}/{$photo}";
+
+    if (!Storage::disk('public')->exists($filePath)) {
+        abort(404, 'File not found');
+    }
+
+    // download asli tanpa kompresi
+    return Storage::disk('public')->download($filePath);
+}
 
 
 }
