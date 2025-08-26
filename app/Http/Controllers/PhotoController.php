@@ -134,6 +134,4 @@ public function download($order_code, $photo)
     return Storage::disk('public')->download($path, $photo);
 }
 
-
-
 }
