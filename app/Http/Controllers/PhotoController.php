@@ -124,20 +124,17 @@ public function show($order_code)
 
 
 
-public function download($order_code, $photo)
+public function download($order_code, $path)
 {
-    $order = Order::where('order_code', $order_code)->firstOrFail();
+    $filePath = storage_path('app/public/' . $path);
 
-    // pastikan path sesuai dengan struktur penyimpanan
-    $filePath = "cloud_gallery/{$order->order_code}/{$photo}";
-
-    if (!Storage::disk('public')->exists($filePath)) {
+    if (!file_exists($filePath)) {
         abort(404, 'File not found');
     }
 
-    // download asli tanpa kompresi
-    return Storage::disk('public')->download($filePath);
+    return response()->download($filePath);
 }
+
 
 
 }
