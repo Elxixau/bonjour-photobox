@@ -41,8 +41,8 @@
 <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-8 p-4">
     <!-- Video Section -->
     <div class="relative flex-1 max-w-md mx-auto">
-        <div id="videoWrapper" class="bg-black rounded-lg overflow-hidden w-full max-w-[360px] aspect-[3/4] relative mx-auto">
-    <video id="video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+       <div id="videoWrapper" class="bg-black rounded-lg overflow-hidden w-full max-w-[480px] aspect-[3/4] mx-auto relative">
+    <video id="video" autoplay playsinline muted class="w-full h-full object-contain"></video>
     <div id="timer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
         w-20 h-20 rounded-full border-4 border-white text-white flex items-center 
         justify-center text-2xl font-bold select-none bg-black bg-opacity-50">
@@ -254,110 +254,54 @@ async function startCamera() {
             img.src = url;
         });
     }
-async function takeSnapshot() {
+    
+   async function takeSnapshot() {
     try {
-        // Tunggu video siap
         if (video.readyState < 2) {
             await new Promise(resolve => video.onloadedmetadata = resolve);
         }
 
-        let srcCanvas = document.createElement('canvas');
-        let ctxSrc = srcCanvas.getContext('2d');
+        let vidWidth = video.videoWidth;
+        let vidHeight = video.videoHeight;
 
-        // Coba ambil frame asli via ImageCapture
-        if (imageCapture && imageCapture.takePhoto) {
-            try {
-                const blob = await imageCapture.takePhoto();
-                const img = await loadImageFromBlob(blob);
-                srcCanvas.width = img.width;
-                srcCanvas.height = img.height;
-                ctxSrc.drawImage(img, 0, 0);
-            } catch (e) {
-                console.warn("ImageCapture gagal, fallback ke video drawImage", e);
-                srcCanvas.width = video.videoWidth;
-                srcCanvas.height = video.videoHeight;
-                ctxSrc.drawImage(video, 0, 0, srcCanvas.width, srcCanvas.height);
-            }
-        } else {
-            srcCanvas.width = video.videoWidth;
-            srcCanvas.height = video.videoHeight;
-            ctxSrc.drawImage(video, 0, 0, srcCanvas.width, srcCanvas.height);
-        }
-
-        // Tentukan output canvas (3:4)
-        const outWidth = 1200;   // bisa disesuaikan
-        const outHeight = 1600;  // portrait
+        // Canvas mengikuti orientasi
         const outputCanvas = document.createElement('canvas');
-        outputCanvas.width = outWidth;
-        outputCanvas.height = outHeight;
-        const ctxOut = outputCanvas.getContext('2d');
+        if (isPortrait) {
+            outputCanvas.width = vidHeight;
+            outputCanvas.height = vidWidth;
+        } else {
+            outputCanvas.width = vidWidth;
+            outputCanvas.height = vidHeight;
+        }
+        const ctx = outputCanvas.getContext('2d');
 
-        ctxOut.save();
+        ctx.save();
 
         if (isPortrait) {
-            ctxOut.translate(outWidth / 2, outHeight / 2);
-            ctxOut.rotate(90 * Math.PI / 180);
-            if (isMirror) ctxOut.scale(1, -1);
-
-            const targetRatio = outHeight / outWidth;
-            const srcRatio = srcCanvas.width / srcCanvas.height;
-            let cropWidth, cropHeight, sx, sy;
-
-            if (srcRatio > targetRatio) {
-                cropHeight = srcCanvas.height;
-                cropWidth = cropHeight * targetRatio;
-                sx = (srcCanvas.width - cropWidth) / 2;
-                sy = 0;
-            } else {
-                cropWidth = srcCanvas.width;
-                cropHeight = cropWidth / targetRatio;
-                sx = 0;
-                sy = (srcCanvas.height - cropHeight) / 2;
-            }
-
-            ctxOut.drawImage(
-                srcCanvas,
-                sx, sy, cropWidth, cropHeight,
-                -outHeight / 2, -outWidth / 2,
-                outHeight, outWidth
-            );
+            // Pindahkan origin ke tengah canvas
+            ctx.translate(outputCanvas.width / 2, outputCanvas.height / 2);
+            ctx.rotate(90 * Math.PI / 180);
+            if (isMirror) ctx.scale(1, -1);
+            // drawImage di tengah canvas dengan ukuran proporsional
+            ctx.drawImage(video, -vidWidth / 2, -vidHeight / 2, vidWidth, vidHeight);
         } else {
-            // Landscape
-            const targetRatio = outWidth / outHeight;
-            const srcRatio = srcCanvas.width / srcCanvas.height;
-            let cropWidth, cropHeight, sx, sy;
-
-            if (srcRatio > targetRatio) {
-                cropHeight = srcCanvas.height;
-                cropWidth = cropHeight * targetRatio;
-                sx = (srcCanvas.width - cropWidth) / 2;
-                sy = 0;
-            } else {
-                cropWidth = srcCanvas.width;
-                cropHeight = cropWidth / targetRatio;
-                sx = 0;
-                sy = (srcCanvas.height - cropHeight) / 2;
-            }
-
             if (isMirror) {
-                ctxOut.translate(outWidth, 0);
-                ctxOut.scale(-1, 1);
+                ctx.translate(vidWidth, 0);
+                ctx.scale(-1, 1);
             }
-
-            ctxOut.drawImage(srcCanvas, sx, sy, cropWidth, cropHeight, 0, 0, outWidth, outHeight);
+            ctx.drawImage(video, 0, 0, vidWidth, vidHeight);
         }
 
-        ctxOut.restore();
+        ctx.restore();
 
-        // Konversi ke Blob untuk kualitas penuh
+        // Konversi ke Blob JPEG
         const blob = await new Promise(resolve => outputCanvas.toBlob(resolve, 'image/jpeg', 1.0));
 
-        // Konversi ke base64 untuk upload
+        // Convert ke base64
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = async () => {
             const base64data = reader.result;
-
             const res = await fetch("{{ route('upload.photo') }}", {
                 method: 'POST',
                 headers: {
@@ -366,7 +310,6 @@ async function takeSnapshot() {
                 },
                 body: JSON.stringify({ order_id: orderId, image: base64data })
             });
-
             const data = await res.json();
             if (data.success && data.url) {
                 const emptyIndex = capturedImages.findIndex(i => !i);
@@ -378,8 +321,8 @@ async function takeSnapshot() {
     } catch (err) {
         console.error(err);
     }
-
 }
+
 
 async function startAutoCaptureWithReminder() {
     await Swal.fire({

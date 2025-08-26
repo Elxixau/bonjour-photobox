@@ -16,6 +16,9 @@
     },
     "dependencies": {
         "@tailwindcss/vite": "^4.1.11",
+        "@tensorflow/tfjs": "^4.11.0",
+        "@upscalerjs/esrgan-medium": "^1.0.0-beta.13",
+        "@upscalerjs/esrgan-thick": "^1.0.0-beta.16",
         "aos": "^2.3.4",
         "sweetalert2": "^11.22.4",
         "upscaler": "^1.0.0-beta.19"
