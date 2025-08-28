@@ -1,62 +1,130 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="text-center mt-8">
-    <h1 class="text-2xl font-bold mb-4">Capture Foto</h1>
-    <button id="captureBtn" class="px-6 py-3 bg-blue-600 text-white rounded">Ambil Foto</button>
-</div>
+@php
+    $layout = $layout ?? 4;
+    $orderId = $order->id ?? '';
+@endphp
 
-<div class="mt-6 max-w-xl mx-auto">
-    <h2 class="text-xl font-semibold mb-2">Preview Foto</h2>
-    <div id="previewContainer" class="border p-2 rounded text-center">
-        <span>Belum ada foto</span>
+<style>
+.preview-img { position: relative; }
+.download-btn { position: absolute; top: 2px; right: 2px; background: black; color: white; padding: 0.2rem 0.4rem; font-size: 0.75rem; border-radius: 4px; cursor: pointer; }
+#timer { width: 60px; height: 60px; font-size: 1.5rem; line-height: 60px; text-align: center; border-radius: 50%; border: 3px solid white; background: rgba(0,0,0,0.5); color: white; margin: auto; display: none;}
+</style>
+
+<h1 id="info" class="text-3xl text-white font-black font-serif mb-8 text-center">
+   0/{{ $layout }} Foto
+</h1>
+
+<div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-8 p-4">
+    <div class="flex-1 max-w-md mx-auto text-center">
+        <div id="timer">3</div>
+    </div>
+
+    <div class="flex-1 max-w-md mx-auto flex flex-col">
+        <h2 class="text-xl font-semibold mb-4 text-white text-center">Preview Foto</h2>
+        <div id="previewContainer" class="grid grid-cols-2 gap-4 p-2"></div>
     </div>
 </div>
 
+<div class="max-w-6xl mx-auto mt-6 text-center space-x-4">
+    <button id="captureBtn" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300">
+        Ambil Foto
+    </button>
+    <button id="reset" class="px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Capture Ulang</button>
+    <button id="nextBtn" class="px-6 py-3 bg-white text-black font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Selanjutnya</button>
+</div>
+
 <script>
-const captureBtn = document.getElementById('captureBtn');
+const layout = {{ $layout }};
+const orderId = '{{ $orderId }}';
+let fotoCount = 0;
+
+const timerEl = document.getElementById('timer');
 const previewContainer = document.getElementById('previewContainer');
+const info = document.getElementById('info');
+const nextBtn = document.getElementById('nextBtn');
+const resetBtn = document.getElementById('reset');
+const captureBtn = document.getElementById('captureBtn');
 
-captureBtn.addEventListener('click', async () => {
-    captureBtn.disabled = true;
-    captureBtn.innerText = 'Mengambil foto...';
+function startCountdown(seconds, callback) {
+    timerEl.textContent = seconds;
+    timerEl.style.display = 'block';
+    const interval = setInterval(() => {
+        seconds--;
+        timerEl.textContent = seconds;
+        if(seconds <= 0){
+            clearInterval(interval);
+            timerEl.style.display = 'none';
+            callback();
+        }
+    }, 1000);
+}
 
+async function capturePhoto() {
     try {
-        // Trigger capture via Laravel proxy
-        const captureRes = await fetch('http://192.168.18.43:5513/?CMD=Capture');
-        if(!captureRes.ok) throw new Error('Gagal capture');
+        const filename = `DSC_${('000'+(fotoCount+1)).slice(-4)}`;
+        await fetch(`/api/set-filename/${orderId}/${filename}`);
+        await fetch(`/api/capture/${orderId}`);
 
-        // Tunggu sebentar supaya file tersedia
-        setTimeout(async () => {
-            const previewRes = await fetch('/proxy/preview');
-            if(!previewRes.ok) throw new Error('Gagal ambil preview');
+        // tunggu sebentar, lalu ambil preview
+        setTimeout(async ()=>{
+            const res = await fetch(`/api/preview/${orderId}`);
+            if(!res.ok) return alert('Gagal ambil preview');
+            const blob = await res.blob();
 
-            const blob = await previewRes.blob();
-            const imgURL = URL.createObjectURL(blob);
+            const img = document.createElement('div');
+            img.className = 'preview-img';
 
-            previewContainer.innerHTML = '';
             const imgEl = document.createElement('img');
-            imgEl.src = imgURL;
-            imgEl.className = 'w-full h-auto rounded';
-            previewContainer.appendChild(imgEl);
+            imgEl.src = URL.createObjectURL(blob);
+            imgEl.className = 'w-full h-auto rounded-lg border border-white';
+            img.appendChild(imgEl);
 
-            // Tombol download
-            const btn = document.createElement('a');
-            btn.href = imgURL;
-            btn.download = 'DSC_capture.jpg';
+            const btn = document.createElement('button');
             btn.innerText = 'Download';
-            btn.className = 'inline-block mt-2 px-4 py-2 bg-green-600 text-white rounded';
-            previewContainer.appendChild(btn);
+            btn.className = 'download-btn';
+            btn.addEventListener('click', ()=> {
+                const a = document.createElement('a');
+                a.href = imgEl.src;
+                a.download = filename+'.jpg';
+                a.click();
+            });
+            img.appendChild(btn);
 
-            captureBtn.disabled = false;
-            captureBtn.innerText = 'Ambil Foto';
+            previewContainer.appendChild(img);
+            fotoCount++;
+            info.textContent = `${fotoCount}/${layout} Foto`;
+
+            if(fotoCount >= layout){
+                nextBtn.classList.remove('hidden');
+                resetBtn.classList.remove('hidden');
+                captureBtn.disabled = true;
+            }
         }, 500);
 
-    } catch (err) {
-        alert(err.message);
-        captureBtn.disabled = false;
-        captureBtn.innerText = 'Ambil Foto';
+    } catch(err){
+        console.error(err);
+        alert('Gagal capture foto.');
     }
+}
+
+captureBtn.addEventListener('click', ()=>{
+    if(fotoCount >= layout) return;
+    startCountdown(3, capturePhoto);
+});
+
+resetBtn.addEventListener('click', ()=>{
+    previewContainer.innerHTML = '';
+    fotoCount = 0;
+    info.textContent = `0/${layout} Foto`;
+    nextBtn.classList.add('hidden');
+    resetBtn.classList.add('hidden');
+    captureBtn.disabled = false;
+});
+
+nextBtn.addEventListener('click', ()=>{
+    alert('Semua foto selesai! Bisa lanjut ke proses berikutnya.');
 });
 </script>
 @endsection
