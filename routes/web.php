@@ -73,5 +73,5 @@ Route::get('/preview/{orderCode}', [PageController::class, 'preview'])->name('pr
 Route::get('/gallery/{order_code}/download/{path}', [PhotoController::class, 'download'])
     ->where('path', '.*')
     ->name('gallery.download');
-Route::get('/proxy/capture', [IGicamController::class, 'capture']);
-Route::get('/proxy/preview', [IGicamController::class, 'preview']);
+Route::get('/proxy/capture', [DigicamController::class, 'capture']);
+Route::get('/proxy/preview', [DigicamController::class, 'preview']);
