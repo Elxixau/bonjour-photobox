@@ -5,7 +5,6 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PhotoController;
-use App\Http\Controllers\DigicamController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\CloudGalleryController;
 /*
@@ -73,5 +72,3 @@ Route::get('/preview/{orderCode}', [PageController::class, 'preview'])->name('pr
 Route::get('/gallery/{order_code}/download/{path}', [PhotoController::class, 'download'])
     ->where('path', '.*')
     ->name('gallery.download');
-Route::get('/proxy/capture', [DigicamController::class, 'capture']);
-Route::get('/proxy/preview', [DigicamController::class, 'preview']);
