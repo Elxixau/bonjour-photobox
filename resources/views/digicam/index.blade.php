@@ -1,4 +1,11 @@
+@extends('layouts.app')
 
+@section('content')
+@php
+    $layout = $layout ?? 4;
+    $orderId = $order->id ?? '';
+    $orientasi = $orientasi ?? 'portrait'; // portrait / landscape
+@endphp
 <style>
 .preview-img { position: relative; }
 .download-btn { position: absolute; top: 2px; right: 2px; background: black; color: white; padding: 0.2rem 0.4rem; font-size: 0.75rem; border-radius: 4px; cursor: pointer; }
@@ -40,6 +47,9 @@ const nextBtn = document.getElementById('nextBtn');
 const resetBtn = document.getElementById('reset');
 const captureBtn = document.getElementById('captureBtn');
 
+// Nama file fixed
+const filename = 'DSC_0001.jpg';
+
 // Countdown sebelum capture
 function startCountdown(seconds, callback) {
     timerEl.textContent = seconds;
@@ -56,7 +66,7 @@ function startCountdown(seconds, callback) {
 }
 
 // Tunggu file tersedia di folder Session1
-async function waitForPreview(filename, retries = 10, delay = 300){
+async function waitForPreview(filename, retries = 20, delay = 500){
     for(let i=0; i<retries; i++){
         try {
             const res = await fetch(`/preview/${filename}`, { method: 'HEAD' });
@@ -74,9 +84,8 @@ async function capturePhoto() {
         await fetch('http://localhost:5513/?CMD=Capture');
 
         fotoCount++;
-        const filename = `preview${fotoCount}.jpg`;
 
-        const ok = await waitForPreview(filename, 10, 300);
+        const ok = await waitForPreview(filename, 20, 500);
         if(!ok) return alert('Foto gagal diambil / preview tidak tersedia.');
 
         const img = document.createElement('div');
@@ -134,3 +143,4 @@ nextBtn.addEventListener('click', () => {
     alert('Semua foto selesai! Bisa lanjut ke proses berikutnya.');
 });
 </script>
+@endsection
