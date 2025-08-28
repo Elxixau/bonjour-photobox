@@ -15,13 +15,13 @@ class PhotoController extends Controller
 {
     public function capture()
 {
-    $res = Http::get('http:// 192.168.18.43:5513/?CMD=Capture');
+    $res = Http::get('http://127.0.0.1:5513/?CMD=Capture');
     return response($res->body(), $res->status());
 }
 
 public function preview()
 {
-    $res = Http::get('http:// 192.168.18.43:5513/preview.jpg');
+    $res = Http::get('http://127.0.0.1:5513/preview.jpg');
     return response($res->body(), 200)->header('Content-Type', 'image/jpeg');
 }
 
