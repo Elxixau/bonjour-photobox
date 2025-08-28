@@ -75,7 +75,8 @@ Route::get('/gallery/{order_code}/download/{path}', [PhotoController::class, 'do
     ->where('path', '.*')
     ->name('gallery.download');
 
-Route::post('/photobooth/capture', [PhotoboothController::class, 'capturePhoto'])->name('photobooth.capture');
 
-Route::get('/camera', [DigicamController::class, 'index'])->name('camera.index');
-Route::post('/camera/capture', [DigicamController::class, 'capture'])->name('camera.capture');
+Route::post('/camera/capture', [DigicamController::class, 'captureFromDigiCam'])->name('camera.capture');
+
+// Upload foto manual (via getUserMedia / fallback)
+Route::post('/camera/upload', [PhotoController::class, 'uploadPhoto'])->name('camera.upload');
