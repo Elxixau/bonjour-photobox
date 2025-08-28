@@ -8,30 +8,17 @@
 @endphp
 
 <style>
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-.blink {
-  animation: blink 1s steps(1, start) infinite;
-}
+@keyframes blink {0%,100%{opacity:1}50%{opacity:0}}
+.blink{animation:blink 1s steps(1,start) infinite}
+.preview-img {position:relative;}
+.download-btn {position:absolute;top:2px;right:2px;background:black;color:white;padding:0.2rem 0.4rem;font-size:0.75rem;border-radius:4px;cursor:pointer;}
 </style>
 
 <h1 id="info" class="text-3xl text-white font-black font-serif mb-8 text-center">
    0/{{ $layout }} Foto
 </h1>
 
-<div class="absolute top-4 right-4 z-50 flex gap-2">
-    <div class="pointer-events-none relative rounded-lg border-2 border-black bg-white px-3 py-1 shadow-black shadow-[4px_4px_0_0] flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
-        </svg>
-        <span id="globalTimer" class="text-lg font-extrabold text-gray-600 select-none">--:--</span>
-    </div>
-</div>
-
 <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-8 p-4">
-    <!-- Video Section -->
     <div class="relative flex-1 max-w-md mx-auto">
         <div id="videoWrapper" class="bg-black rounded-lg overflow-hidden w-full max-w-[480px] mx-auto"
             style="aspect-ratio: {{ $orientasi == 'portrait' ? '3/4' : '4/3' }}">
@@ -44,7 +31,6 @@
         </div>
     </div>
 
-    <!-- Preview Section -->
     <div class="flex-1 max-w-md mx-auto flex flex-col">
         <h2 class="text-xl font-semibold mb-4 text-white text-center">Preview Foto</h2>
         <div id="previewContainer" class="grid grid-cols-2 gap-4 p-2"></div>
@@ -55,15 +41,13 @@
     <button id="captureBtn" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300">
         Ambil Foto
     </button>
-    <button id="reset" class="px-6 py-3  bg-gray-400 text-white font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Capture Ulang</button>
-    <button id="nextBtn" class="px-6 py-3  bg-white text-black font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Selanjutnya</button>
+    <button id="reset" class="px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Capture Ulang</button>
+    <button id="nextBtn" class="px-6 py-3 bg-white text-black font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Selanjutnya</button>
 </div>
 
 <script>
 const layout = {{ $layout }};
 let fotoCount = 0;
-
-// Element references
 const video = document.getElementById('video');
 const timerEl = document.getElementById('timer');
 const previewContainer = document.getElementById('previewContainer');
@@ -81,7 +65,6 @@ navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: fals
 function startCountdown(seconds, callback) {
     timerEl.textContent = seconds;
     timerEl.classList.remove('hidden');
-
     const interval = setInterval(() => {
         seconds--;
         timerEl.textContent = seconds;
@@ -93,20 +76,32 @@ function startCountdown(seconds, callback) {
     }, 1000);
 }
 
-// Capture foto dari iGicam
+// Capture foto dari iGicam dengan preview unik
 async function capturePhoto() {
     try {
-        // Trigger capture iGicam
         await fetch('http://localhost:5513/?CMD=Capture');
-
-        // Delay untuk memastikan foto tersimpan
         setTimeout(() => {
-            const img = document.createElement('img');
-            img.src = `http://localhost:5513/preview.jpg?ts=${Date.now()}`; // cache-buster
-            img.className = "w-full h-auto rounded-lg border border-white";
-            previewContainer.appendChild(img);
-
             fotoCount++;
+            const img = document.createElement('div');
+            img.className = 'preview-img';
+            const imgEl = document.createElement('img');
+            imgEl.src = `http://localhost:5513/preview.jpg?ts=${Date.now()}&id=${fotoCount}`;
+            imgEl.className = 'w-full h-auto rounded-lg border border-white';
+            img.appendChild(imgEl);
+
+            // Tombol download
+            const btn = document.createElement('button');
+            btn.innerText = 'Download';
+            btn.className = 'download-btn';
+            btn.addEventListener('click', () => {
+                const a = document.createElement('a');
+                a.href = imgEl.src;
+                a.download = `foto${fotoCount}.jpg`;
+                a.click();
+            });
+            img.appendChild(btn);
+
+            previewContainer.appendChild(img);
             info.textContent = `${fotoCount}/${layout} Foto`;
 
             if(fotoCount >= layout) {
@@ -121,13 +116,11 @@ async function capturePhoto() {
     }
 }
 
-// Tombol capture manual dengan countdown 3 detik
 captureBtn.addEventListener('click', () => {
     if(fotoCount >= layout) return;
     startCountdown(3, capturePhoto);
 });
 
-// Tombol reset
 resetBtn.addEventListener('click', () => {
     previewContainer.innerHTML = '';
     fotoCount = 0;
@@ -137,7 +130,6 @@ resetBtn.addEventListener('click', () => {
     captureBtn.disabled = false;
 });
 
-// Tombol selanjutnya
 nextBtn.addEventListener('click', () => {
     alert('Semua foto selesai! Bisa lanjut ke proses berikutnya.');
 });
