@@ -1,130 +1,78 @@
 @extends('layouts.app')
 
 @section('content')
-@php
-    $layout = $layout ?? 4;
-    $orderId = $order->id ?? '';
-@endphp
+<h1 class="text-white text-center text-3xl mb-4">Preview Foto</h1>
+
+<div class="flex justify-center mb-4">
+    <button id="captureBtn" class="px-6 py-3 bg-blue-600 text-white rounded-lg">Ambil Foto</button>
+</div>
+
+<div id="previewContainer" class="grid grid-cols-2 gap-4 p-4 max-w-4xl mx-auto"></div>
 
 <style>
 .preview-img { position: relative; }
-.download-btn { position: absolute; top: 2px; right: 2px; background: black; color: white; padding: 0.2rem 0.4rem; font-size: 0.75rem; border-radius: 4px; cursor: pointer; }
-#timer { width: 60px; height: 60px; font-size: 1.5rem; line-height: 60px; text-align: center; border-radius: 50%; border: 3px solid white; background: rgba(0,0,0,0.5); color: white; margin: auto; display: none;}
+.download-btn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: black;
+    color: white;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
 </style>
 
-<h1 id="info" class="text-3xl text-white font-black font-serif mb-8 text-center">
-   0/{{ $layout }} Foto
-</h1>
-
-<div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-8 p-4">
-    <div class="flex-1 max-w-md mx-auto text-center">
-        <div id="timer">3</div>
-    </div>
-
-    <div class="flex-1 max-w-md mx-auto flex flex-col">
-        <h2 class="text-xl font-semibold mb-4 text-white text-center">Preview Foto</h2>
-        <div id="previewContainer" class="grid grid-cols-2 gap-4 p-2"></div>
-    </div>
-</div>
-
-<div class="max-w-6xl mx-auto mt-6 text-center space-x-4">
-    <button id="captureBtn" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300">
-        Ambil Foto
-    </button>
-    <button id="reset" class="px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Capture Ulang</button>
-    <button id="nextBtn" class="px-6 py-3 bg-white text-black font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Selanjutnya</button>
-</div>
-
 <script>
-const layout = {{ $layout }};
-const orderId = '{{ $orderId }}';
-let fotoCount = 0;
-
-const timerEl = document.getElementById('timer');
+let fotoCount = 1;
 const previewContainer = document.getElementById('previewContainer');
-const info = document.getElementById('info');
-const nextBtn = document.getElementById('nextBtn');
-const resetBtn = document.getElementById('reset');
 const captureBtn = document.getElementById('captureBtn');
 
-function startCountdown(seconds, callback) {
-    timerEl.textContent = seconds;
-    timerEl.style.display = 'block';
-    const interval = setInterval(() => {
-        seconds--;
-        timerEl.textContent = seconds;
-        if(seconds <= 0){
-            clearInterval(interval);
-            timerEl.style.display = 'none';
-            callback();
-        }
-    }, 1000);
-}
-
 async function capturePhoto() {
-    try {
-        const filename = `ORD-${orderId}_${fotoCount+1}`;
-        await fetch(`/proxy/set-filename/${orderId}/${filename}`);
-        await fetch(`/proxy/capture/${orderId}`);
+    const filename = `DSC_${String(fotoCount).padStart(4,'0')}.jpg`;
 
-        // tunggu sebentar, lalu ambil preview
-        setTimeout(async ()=>{
-            const res = await fetch(`/proxy/preview/${orderId}`);
-            if(!res.ok) return alert('Gagal ambil preview');
+    try {
+        // Trigger capture via Laravel proxy
+        await fetch('/proxy/capture');
+
+        // Tunggu sebentar agar kamera menyimpan file
+        setTimeout(async () => {
+            const res = await fetch(`/proxy/preview/${filename}`);
+            if(!res.ok) return alert('Preview gagal diambil');
+
             const blob = await res.blob();
 
-            const img = document.createElement('div');
-            img.className = 'preview-img';
+            const wrapper = document.createElement('div');
+            wrapper.className = 'preview-img';
 
-            const imgEl = document.createElement('img');
-            imgEl.src = URL.createObjectURL(blob);
-            imgEl.className = 'w-full h-auto rounded-lg border border-white';
-            img.appendChild(imgEl);
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(blob);
+            img.className = 'w-full h-auto rounded-lg border border-white';
+            wrapper.appendChild(img);
 
+            // Tombol download
             const btn = document.createElement('button');
             btn.innerText = 'Download';
             btn.className = 'download-btn';
-            btn.addEventListener('click', ()=> {
+            btn.addEventListener('click', () => {
                 const a = document.createElement('a');
-                a.href = imgEl.src;
-                a.download = filename+'.jpg';
+                a.href = img.src;
+                a.download = filename;
                 a.click();
             });
-            img.appendChild(btn);
+            wrapper.appendChild(btn);
 
-            previewContainer.appendChild(img);
+            previewContainer.appendChild(wrapper);
+
             fotoCount++;
-            info.textContent = `${fotoCount}/${layout} Foto`;
-
-            if(fotoCount >= layout){
-                nextBtn.classList.remove('hidden');
-                resetBtn.classList.remove('hidden');
-                captureBtn.disabled = true;
-            }
-        }, 500);
-
+        }, 500); // sesuaikan delay sesuai respon kamera
     } catch(err){
         console.error(err);
-        alert('Gagal capture foto.');
+        alert('Gagal capture foto');
     }
 }
 
-captureBtn.addEventListener('click', ()=>{
-    if(fotoCount >= layout) return;
-    startCountdown(3, capturePhoto);
-});
-
-resetBtn.addEventListener('click', ()=>{
-    previewContainer.innerHTML = '';
-    fotoCount = 0;
-    info.textContent = `0/${layout} Foto`;
-    nextBtn.classList.add('hidden');
-    resetBtn.classList.add('hidden');
-    captureBtn.disabled = false;
-});
-
-nextBtn.addEventListener('click', ()=>{
-    alert('Semua foto selesai! Bisa lanjut ke proses berikutnya.');
-});
+captureBtn.addEventListener('click', capturePhoto);
 </script>
 @endsection
