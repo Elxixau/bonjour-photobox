@@ -68,6 +68,10 @@
 <script>
 (() => {
     const video = document.getElementById('video');
+    
+   video.style.filter = "brightness(1.5) contrast(1.2) saturate(1.2)";
+
+
     const timerEl = document.getElementById('timer');
     const info = document.getElementById('info');
     const resetBtn = document.getElementById('reset');
@@ -255,7 +259,8 @@ async function startCamera() {
             img.src = url;
         });
     }
-    async function takeSnapshot() {
+    
+   async function takeSnapshot() {
     try {
         if (video.readyState < 2) {
             await new Promise(resolve => video.onloadedmetadata = resolve);
@@ -263,42 +268,45 @@ async function startCamera() {
 
         let vidWidth = video.videoWidth;
         let vidHeight = video.videoHeight;
+const scaleFactor = 1; // skala 2x
 
-        const scaleFactor = 3; // scale up 3x
-        const outputCanvas = document.createElement('canvas');
+// Canvas mengikuti orientasi
+const outputCanvas = document.createElement('canvas');
+if (isPortrait) {
+    outputCanvas.width = vidHeight * scaleFactor;
+    outputCanvas.height = vidWidth * scaleFactor;
+} else {
+    outputCanvas.width = vidWidth * scaleFactor;
+    outputCanvas.height = vidHeight * scaleFactor;
+}
 
-        if (isPortrait) {
-            outputCanvas.width = vidHeight * scaleFactor;
-            outputCanvas.height = vidWidth * scaleFactor;
-        } else {
-            outputCanvas.width = vidWidth * scaleFactor;
-            outputCanvas.height = vidHeight * scaleFactor;
-        }
+const ctx = outputCanvas.getContext('2d');
+ctx.save();
 
-        const ctx = outputCanvas.getContext('2d');
-        ctx.scale(scaleFactor, scaleFactor);
+// Tambahkan filter brightness & contrast
+ctx.filter = "brightness(1.5) contrast(1.2) saturate(1.2)";
 
-        ctx.save();
+// Skala context sesuai scaleFactor
+ctx.scale(scaleFactor, scaleFactor);
 
-        if (isPortrait) {
-            ctx.translate(outputCanvas.width / (2*scaleFactor), outputCanvas.height / (2*scaleFactor));
-            ctx.rotate(90 * Math.PI / 180);
-            if (isMirror) ctx.scale(1, -1);
-            ctx.drawImage(video, -vidWidth / 2, -vidHeight / 2, vidWidth, vidHeight);
-        } else {
-            if (isMirror) {
-                ctx.translate(vidWidth, 0);
-                ctx.scale(-1, 1);
-            }
-            ctx.drawImage(video, 0, 0, vidWidth, vidHeight);
-        }
+if (isPortrait) {
+    ctx.translate(outputCanvas.width / (2*scaleFactor), outputCanvas.height / (2*scaleFactor));
+    ctx.rotate(90 * Math.PI / 180);
+    if (isMirror) ctx.scale(1, -1);
+    ctx.drawImage(video, -vidWidth / 2, -vidHeight / 2, vidWidth, vidHeight);
+} else {
+    if (isMirror) {
+        ctx.translate(vidWidth, 0);
+        ctx.scale(-1, 1);
+    }
+    ctx.drawImage(video, 0, 0, vidWidth, vidHeight);
+}
 
-        ctx.restore();
-
-        // Konversi ke Blob JPEG kualitas maksimal
+ctx.restore();
+        // Konversi ke Blob JPEG
         const blob = await new Promise(resolve => outputCanvas.toBlob(resolve, 'image/jpeg', 1.0));
 
-        // Convert ke base64 dan upload
+        // Convert ke base64
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = async () => {
@@ -323,7 +331,6 @@ async function startCamera() {
         console.error(err);
     }
 }
-
 
 
 async function startAutoCaptureWithReminder() {

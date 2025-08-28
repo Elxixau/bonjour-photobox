@@ -5,7 +5,7 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PhotoController;
-
+use App\Http\Controllers\DigicamController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\CloudGalleryController;
 
@@ -71,5 +71,11 @@ Route::post('/sticker/export/{orderCode}', [AssetController::class, 'export'])->
 Route::get('/gallery/{order_code}', [PhotoController::class, 'show'])->name('gallery.show');
 Route::get('/order/{order_code}/qr-data', [PageController::class, 'getQrData'])->name('orders.qr-data');
 Route::get('/preview/{orderCode}', [PageController::class, 'preview'])->name('preview.show');
-Route::get('/gallery/{order_code}/download/{photo}', [PhotoController::class, 'download'])
+Route::get('/gallery/{order_code}/download/{path}', [PhotoController::class, 'download'])
+    ->where('path', '.*')
     ->name('gallery.download');
+
+Route::post('/photobooth/capture', [PhotoboothController::class, 'capturePhoto'])->name('photobooth.capture');
+
+Route::get('/camera', [DigicamController::class, 'index'])->name('camera.index');
+Route::post('/camera/capture', [DigicamController::class, 'capture'])->name('camera.capture');

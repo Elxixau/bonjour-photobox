@@ -119,7 +119,7 @@ public function show($order_code)
     $startDate = $order->created_at;
     $endDate = $order->created_at->copy()->addDays(7);
 
-    return view('gallery.show', compact('order', 'photos', 'startDate', 'endDate'));
+    return view('digicam.index', compact('order', 'photos', 'startDate', 'endDate'));
 }
 
 
@@ -133,5 +133,7 @@ public function download($order_code, $photo)
 
     return Storage::disk('public')->download($path, $photo);
 }
+
+
 
 }
