@@ -61,19 +61,16 @@ function startCountdown(seconds, callback) {
 
 async function capturePhoto() {
     try {
-        const filename = `DSC_${String(fotoCount+1).padStart(4,'0')}`;
-        
-        // 1. Set filename (opsional, bisa skip jika pakai default iGicam)
-        await fetch(`/proxy/set-filename/${filename}`);
+        // Capture
+        await fetch('http://127.0.0.1:5513/?CMD=Capture');
 
-        // 2. Capture via proxy
-        await fetch('/proxy/capture');
-
-        // 3. Tunggu sebentar, ambil preview
+        // Tunggu sebentar
         setTimeout(async ()=>{
-            const res = await fetch('/proxy/preview');
+            const res = await fetch('http://127.0.0.1:5513/DSC0011.jpg');
             if(!res.ok) return alert('Gagal ambil preview');
             const blob = await res.blob();
+
+            const filename = `DSC_${String(fotoCount+1).padStart(4,'0')}.jpg`;
 
             const img = document.createElement('div');
             img.className = 'preview-img';
@@ -89,7 +86,7 @@ async function capturePhoto() {
             btn.addEventListener('click', ()=> {
                 const a = document.createElement('a');
                 a.href = imgEl.src;
-                a.download = filename+'.jpg';
+                a.download = filename;
                 a.click();
             });
             img.appendChild(btn);
