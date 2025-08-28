@@ -2,7 +2,7 @@
 
 @section('content')
 @php
-    $layout = $layout ?? 4; // jumlah maksimal foto
+    $layout = $layout ?? 4; // jumlah maksimal foto per order
     $orderCode = $order->order_code ?? 'ORD-0001'; // contoh order code
     $saveFolder = 'C:\\Users\\Asus mini\\Pictures\\digiCamControl\\Bonjour';
 @endphp
@@ -79,15 +79,18 @@ async function waitForPreview(filename, retries = 20, delay = 500){
 // Capture foto manual
 async function capturePhoto() {
     try {
+        // Tentukan nama file unik per capture
+        const fileName = `${orderCode}_${fotoCount+1}`;
+
         // Set folder
         await fetch(`http://localhost:5513/?slc=set&param1=session.folder&param2=${encodeURIComponent(saveFolder)}`);
-        // Set nama file sesuai order code
-        await fetch(`http://localhost:5513/?slc=set&param1=session.filenametemplate&param2=${encodeURIComponent(orderCode)}`);
+        // Set file template
+        await fetch(`http://localhost:5513/?slc=set&param1=session.filenametemplate&param2=${encodeURIComponent(fileName)}`);
         // Capture
         await fetch('http://localhost:5513/?slc=capture&param1=&param2=');
 
         fotoCount++;
-        const filename = `${orderCode}.jpg`;
+        const filename = `${fileName}.jpg`;
 
         const ok = await waitForPreview(filename, 20, 500);
         if(!ok) return alert('Foto gagal diambil / preview tidak tersedia.');
