@@ -23,7 +23,7 @@ captureBtn.addEventListener('click', async () => {
 
     try {
         // Trigger capture via Laravel proxy
-        const captureRes = await fetch('/proxy/capture');
+        const captureRes = await fetch('http://192.168.18.43:5513/?CMD=Capture');
         if(!captureRes.ok) throw new Error('Gagal capture');
 
         // Tunggu sebentar supaya file tersedia
