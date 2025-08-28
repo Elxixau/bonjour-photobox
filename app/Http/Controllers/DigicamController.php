@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DigicamController extends Controller
 {   // IP komputer box iGicam
-    protected $igicamIP = '127.0.0.1:5513';
+    protected $igicamIP = '192.168.18.43:5513';
 
     // Trigger capture foto
     public function capture()
