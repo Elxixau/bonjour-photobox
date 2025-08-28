@@ -2,7 +2,7 @@
 
 @section('content')
 @php
-    $layout = $layout ?? 4; // jumlah maksimal foto per order
+    $layout = $layout ?? 4; // jumlah maksimal foto
     $orderCode = $order->order_code ?? 'ORD-0001'; // contoh order code
 @endphp
 
@@ -77,13 +77,13 @@ async function waitForPreview(filename, retries = 20, delay = 500){
 // Capture foto manual
 async function capturePhoto() {
     try {
-        // Tentukan nama file unik per capture
+        // Nama file unik per capture
         const fileName = `${orderCode}_${fotoCount+1}`;
 
-        // Set file template (folder default tetap Session1)
-        await fetch(`http://localhost:5513/?slc=set&param1=session.filenametemplate&param2=${encodeURIComponent(fileName)}`);
-        // Capture
-        await fetch('http://localhost:5513/?slc=capture&param1=&param2=');
+        // Set file template via Laravel proxy
+        await fetch(`/proxy/set-filename/${fileName}`);
+        // Capture via Laravel proxy
+        await fetch('/proxy/capture');
 
         fotoCount++;
         const filename = `${fileName}.jpg`;

@@ -8,7 +8,7 @@ use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\DigicamController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\CloudGalleryController;
-
+use Illuminate\Support\Facades\Http;
 /*
 |--------------------------------------------------------------------------
 | Halaman Awal & Kategori
@@ -80,3 +80,16 @@ Route::post('/camera/capture', [DigicamController::class, 'captureFromDigiCam'])
 
 // Upload foto manual (via getUserMedia / fallback)
 Route::post('/camera/upload', [PhotoController::class, 'uploadPhoto'])->name('camera.upload');
+
+
+
+
+Route::get('/proxy/capture', function () {
+    $res = Http::get('http://localhost:5513/?slc=capture&param1=&param2=');
+    return response($res->body(), $res->status());
+});
+
+Route::get('/proxy/set-filename/{filename}', function ($filename) {
+    $res = Http::get("http://localhost:5513/?slc=set&param1=session.filenametemplate&param2={$filename}");
+    return response($res->body(), $res->status());
+});
