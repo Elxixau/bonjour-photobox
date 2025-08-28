@@ -4,7 +4,6 @@
 @php
     $layout = $layout ?? 4; // jumlah maksimal foto per order
     $orderCode = $order->order_code ?? 'ORD-0001'; // contoh order code
-    $saveFolder = 'C:\\Users\\Asus mini\\Pictures\\digiCamControl\\Bonjour';
 @endphp
 
 <style>
@@ -47,7 +46,6 @@ const resetBtn = document.getElementById('reset');
 const captureBtn = document.getElementById('captureBtn');
 
 const orderCode = '{{ $orderCode }}';
-const saveFolder = '{{ $saveFolder }}';
 
 // Countdown sebelum capture
 function startCountdown(seconds, callback) {
@@ -64,7 +62,7 @@ function startCountdown(seconds, callback) {
     }, 1000);
 }
 
-// Tunggu file tersedia di folder Bonjour
+// Tunggu file tersedia di folder Session1
 async function waitForPreview(filename, retries = 20, delay = 500){
     for(let i=0; i<retries; i++){
         try {
@@ -82,9 +80,7 @@ async function capturePhoto() {
         // Tentukan nama file unik per capture
         const fileName = `${orderCode}_${fotoCount+1}`;
 
-        // Set folder
-        await fetch(`http://localhost:5513/?slc=set&param1=session.folder&param2=${encodeURIComponent(saveFolder)}`);
-        // Set file template
+        // Set file template (folder default tetap Session1)
         await fetch(`http://localhost:5513/?slc=set&param1=session.filenametemplate&param2=${encodeURIComponent(fileName)}`);
         // Capture
         await fetch('http://localhost:5513/?slc=capture&param1=&param2=');
