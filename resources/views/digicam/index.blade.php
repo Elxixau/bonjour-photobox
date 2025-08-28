@@ -2,8 +2,8 @@
 
 @section('content')
 @php
-    $layout = $layout ?? 4; // jumlah maksimal foto
-    $orderCode = $order->order_code ?? 'ORD-0001'; // contoh order code
+    $layout = $layout ?? 4;
+    $orderId = $order->id ?? '';
 @endphp
 
 <style>
@@ -37,7 +37,9 @@
 
 <script>
 const layout = {{ $layout }};
+const orderId = '{{ $orderId }}';
 let fotoCount = 0;
+
 const timerEl = document.getElementById('timer');
 const previewContainer = document.getElementById('previewContainer');
 const info = document.getElementById('info');
@@ -45,16 +47,13 @@ const nextBtn = document.getElementById('nextBtn');
 const resetBtn = document.getElementById('reset');
 const captureBtn = document.getElementById('captureBtn');
 
-const orderCode = '{{ $orderCode }}';
-
-// Countdown sebelum capture
 function startCountdown(seconds, callback) {
     timerEl.textContent = seconds;
     timerEl.style.display = 'block';
     const interval = setInterval(() => {
         seconds--;
         timerEl.textContent = seconds;
-        if(seconds <= 0) {
+        if(seconds <= 0){
             clearInterval(interval);
             timerEl.style.display = 'none';
             callback();
@@ -62,62 +61,47 @@ function startCountdown(seconds, callback) {
     }, 1000);
 }
 
-// Tunggu file tersedia di folder Session1
-async function waitForPreview(filename, retries = 20, delay = 500){
-    for(let i=0; i<retries; i++){
-        try {
-            const res = await fetch(`/preview/${filename}`, { method: 'HEAD' });
-            if(res.ok) return true;
-        } catch(e){}
-        await new Promise(r=>setTimeout(r, delay));
-    }
-    return false;
-}
-
-// Capture foto manual
 async function capturePhoto() {
     try {
-        // Nama file unik per capture
-        const fileName = `${orderCode}_${fotoCount+1}`;
+        const filename = `ORD-${orderId}_${fotoCount+1}`;
+        await fetch(`/proxy/set-filename/${orderId}/${filename}`);
+        await fetch(`/proxy/capture/${orderId}`);
 
-        // Set file template via Laravel proxy
-        await fetch(`/proxy/set-filename/${fileName}`);
-        // Capture via Laravel proxy
-        await fetch('/proxy/capture');
+        // tunggu sebentar, lalu ambil preview
+        setTimeout(async ()=>{
+            const res = await fetch(`/proxy/preview/${orderId}`);
+            if(!res.ok) return alert('Gagal ambil preview');
+            const blob = await res.blob();
 
-        fotoCount++;
-        const filename = `${fileName}.jpg`;
+            const img = document.createElement('div');
+            img.className = 'preview-img';
 
-        const ok = await waitForPreview(filename, 20, 500);
-        if(!ok) return alert('Foto gagal diambil / preview tidak tersedia.');
+            const imgEl = document.createElement('img');
+            imgEl.src = URL.createObjectURL(blob);
+            imgEl.className = 'w-full h-auto rounded-lg border border-white';
+            img.appendChild(imgEl);
 
-        const img = document.createElement('div');
-        img.className = 'preview-img';
+            const btn = document.createElement('button');
+            btn.innerText = 'Download';
+            btn.className = 'download-btn';
+            btn.addEventListener('click', ()=> {
+                const a = document.createElement('a');
+                a.href = imgEl.src;
+                a.download = filename+'.jpg';
+                a.click();
+            });
+            img.appendChild(btn);
 
-        const imgEl = document.createElement('img');
-        imgEl.src = `/preview/${filename}?ts=${Date.now()}`;
-        imgEl.className = 'w-full h-auto rounded-lg border border-white';
-        img.appendChild(imgEl);
+            previewContainer.appendChild(img);
+            fotoCount++;
+            info.textContent = `${fotoCount}/${layout} Foto`;
 
-        const btn = document.createElement('button');
-        btn.innerText = 'Download';
-        btn.className = 'download-btn';
-        btn.addEventListener('click', ()=> {
-            const a = document.createElement('a');
-            a.href = imgEl.src;
-            a.download = filename;
-            a.click();
-        });
-        img.appendChild(btn);
-
-        previewContainer.appendChild(img);
-        info.textContent = `${fotoCount}/${layout} Foto`;
-
-        if(fotoCount >= layout){
-            nextBtn.classList.remove('hidden');
-            resetBtn.classList.remove('hidden');
-            captureBtn.disabled = true;
-        }
+            if(fotoCount >= layout){
+                nextBtn.classList.remove('hidden');
+                resetBtn.classList.remove('hidden');
+                captureBtn.disabled = true;
+            }
+        }, 500);
 
     } catch(err){
         console.error(err);
@@ -125,14 +109,12 @@ async function capturePhoto() {
     }
 }
 
-// Tombol capture
-captureBtn.addEventListener('click', () => {
+captureBtn.addEventListener('click', ()=>{
     if(fotoCount >= layout) return;
     startCountdown(3, capturePhoto);
 });
 
-// Tombol reset
-resetBtn.addEventListener('click', () => {
+resetBtn.addEventListener('click', ()=>{
     previewContainer.innerHTML = '';
     fotoCount = 0;
     info.textContent = `0/${layout} Foto`;
@@ -141,8 +123,7 @@ resetBtn.addEventListener('click', () => {
     captureBtn.disabled = false;
 });
 
-// Tombol selanjutnya
-nextBtn.addEventListener('click', () => {
+nextBtn.addEventListener('click', ()=>{
     alert('Semua foto selesai! Bisa lanjut ke proses berikutnya.');
 });
 </script>

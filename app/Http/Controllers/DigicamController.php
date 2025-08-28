@@ -6,72 +6,93 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use App\Models\CloudGallery;
-use Illuminate\Support\Facades\File;
+use App\Models\Order;
+use Illuminate\Support\Facades\Http;
+use Symfony\Component\HttpFoundation\Response;
 
 class DigicamController extends Controller
-{
-    public function captureFromDigiCam(Request $request)
+{  
+      // Mapping kategori ke IP statis
+    protected $kategoriIP = [
+        'portrait' => '182.253.164.242:5513',
+        'wedding'  => '192.168.1.102:5513',
+        'event'    => '192.168.1.103:5513',
+        // dst...
+    ];
+
+    protected function getIP($kategori)
     {
-        $orderId = $request->input('order_id');
-
-        if (!$orderId) {
-            return response()->json(['error' => 'Order ID is required'], 422);
-        }
-
-        // 1. Trigger capture di DigiCamControl
-        $response = Http::get('http://127.0.0.1:5513/?CMD=Capture');
-        if (!$response->ok()) {
-            return response()->json(['error' => 'Failed to capture'], 500);
-        }
-
-        // 2. Tunggu sebentar biar foto tersimpan
-        sleep(2); // delay 2 detik
-
-        // 3. Ambil file terbaru dari folder default DigiCamControl
-        $digicamFolder = 'C:/Users/Public/Pictures/digiCamControl';
-        $latestFile = collect(glob($digicamFolder . '/*.jpg'))
-                        ->sortByDesc(fn($file) => filemtime($file))
-                        ->first();
-
-        if (!$latestFile) {
-            return response()->json(['error' => 'No file captured'], 500);
-        }
-
-        // 4. Simpan ke storage Laravel / cloud_gallery folder
-        $order = \App\Models\Order::find($orderId);
-        if (!$order) {
-            return response()->json(['error' => 'Order not found'], 404);
-        }
-
-        $filename = $order->order_code . '_' . Str::random(6) . '.jpg';
-        $storagePath = "cloud_gallery/{$order->order_code}/{$filename}";
-
-        Storage::disk('public')->put($storagePath, file_get_contents($latestFile));
-
-        // 5. Simpan ke database
-        $gallery = CloudGallery::create([
-            'order_id' => $orderId,
-            'img_path' => $storagePath
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'id' => $gallery->id,
-            'url' => asset("storage/{$storagePath}")
-        ]);
+        return $this->kategoriIP[$kategori] ?? null;
     }
 
-
-        public function deleteSinglePhoto(Request $request)
+    // Capture berdasarkan kategori
+    public function capture($kategori)
     {
-        $filePath = $request->input('file'); // contoh: photos/ORDER123/file.jpg
+        $ip = $this->getIP($kategori);
+        if(!$ip) return response('Kategori tidak valid', 400);
 
-        if (Storage::disk('public')->exists($filePath)) {
-            Storage::disk('public')->delete($filePath);
-
-            return response()->json(['success' => true]);
+        try {
+            $res = Http::get("http://$ip/?CMD=Capture");
+            return response($res->body(), $res->status());
+        } catch (\Exception $e) {
+            return response('Gagal konek ke kamera: '.$e->getMessage(), 500);
         }
+    }
 
-        return response()->json(['error' => 'File not found'], 404);
+    // Set custom filename
+    public function setFilename($kategori, $filename)
+    {
+        $ip = $this->getIP($kategori);
+        if(!$ip) return response('Kategori tidak valid', 400);
+
+        try {
+            $res = Http::get("http://$ip/?slc=set&param1=session.filenametemplate&param2=$filename");
+            return response($res->body(), $res->status());
+        } catch (\Exception $e) {
+            return response('Gagal set filename: '.$e->getMessage(), 500);
+        }
+    }
+
+    // Preview foto terakhir
+    public function preview($kategori)
+    {
+        $ip = $this->getIP($kategori);
+        if(!$ip) return response('Kategori tidak valid', 400);
+
+        try {
+            $res = Http::get("http://$ip/preview.jpg");
+            return response($res->body(), 200)
+                    ->header('Content-Type', 'image/jpeg');
+        } catch (\Exception $e) {
+            return response('Gagal ambil preview: '.$e->getMessage(), 500);
+        }
+    }
+
+    // Capture berdasarkan order ID
+    public function captureByOrder($orderId)
+    {
+        $order = Order::find($orderId);
+        if(!$order) return response('Order tidak ditemukan', 404);
+
+        $kategori = $order->kategori;
+        return $this->capture($kategori);
+    }
+
+    public function setFilenameByOrder($orderId, $filename)
+    {
+        $order = Order::find($orderId);
+        if(!$order) return response('Order tidak ditemukan', 404);
+
+        $kategori = $order->kategori;
+        return $this->setFilename($kategori, $filename);
+    }
+
+    public function previewByOrder($orderId)
+    {
+        $order = Order::find($orderId);
+        if(!$order) return response('Order tidak ditemukan', 404);
+
+        $kategori = $order->kategori;
+        return $this->preview($kategori);
     }
 }
