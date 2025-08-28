@@ -2,10 +2,11 @@
 
 @section('content')
 @php
-    $layout = $layout ?? 4;
-    $orderId = $order->id ?? '';
-    $orientasi = $orientasi ?? 'portrait'; // portrait / landscape
+    $layout = $layout ?? 4; // jumlah maksimal foto
+    $orderCode = $order->order_code ?? 'ORD-0001'; // contoh order code
+    $saveFolder = 'C:\\Users\\Asus mini\\Pictures\\digiCamControl\\Bonjour';
 @endphp
+
 <style>
 .preview-img { position: relative; }
 .download-btn { position: absolute; top: 2px; right: 2px; background: black; color: white; padding: 0.2rem 0.4rem; font-size: 0.75rem; border-radius: 4px; cursor: pointer; }
@@ -17,12 +18,10 @@
 </h1>
 
 <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-8 p-4">
-    <!-- Timer / Countdown -->
     <div class="flex-1 max-w-md mx-auto text-center">
         <div id="timer">3</div>
     </div>
 
-    <!-- Preview Section -->
     <div class="flex-1 max-w-md mx-auto flex flex-col">
         <h2 class="text-xl font-semibold mb-4 text-white text-center">Preview Foto</h2>
         <div id="previewContainer" class="grid grid-cols-2 gap-4 p-2"></div>
@@ -47,8 +46,8 @@ const nextBtn = document.getElementById('nextBtn');
 const resetBtn = document.getElementById('reset');
 const captureBtn = document.getElementById('captureBtn');
 
-// Nama file fixed
-const filename = 'DSC_0001.jpg';
+const orderCode = '{{ $orderCode }}';
+const saveFolder = '{{ $saveFolder }}';
 
 // Countdown sebelum capture
 function startCountdown(seconds, callback) {
@@ -65,7 +64,7 @@ function startCountdown(seconds, callback) {
     }, 1000);
 }
 
-// Tunggu file tersedia di folder Session1
+// Tunggu file tersedia di folder Bonjour
 async function waitForPreview(filename, retries = 20, delay = 500){
     for(let i=0; i<retries; i++){
         try {
@@ -80,10 +79,15 @@ async function waitForPreview(filename, retries = 20, delay = 500){
 // Capture foto manual
 async function capturePhoto() {
     try {
-        // Trigger iGicam
-        await fetch('http://localhost:5513/?CMD=Capture');
+        // Set folder
+        await fetch(`http://localhost:5513/?slc=set&param1=session.folder&param2=${encodeURIComponent(saveFolder)}`);
+        // Set nama file sesuai order code
+        await fetch(`http://localhost:5513/?slc=set&param1=session.filenametemplate&param2=${encodeURIComponent(orderCode)}`);
+        // Capture
+        await fetch('http://localhost:5513/?slc=capture&param1=&param2=');
 
         fotoCount++;
+        const filename = `${orderCode}.jpg`;
 
         const ok = await waitForPreview(filename, 20, 500);
         if(!ok) return alert('Foto gagal diambil / preview tidak tersedia.');
