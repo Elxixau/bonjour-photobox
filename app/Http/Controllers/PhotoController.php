@@ -13,125 +13,16 @@ use Illuminate\Support\Facades\Storage;
 
 class PhotoController extends Controller
 {
-    
-    
-   
-public function uploadPhoto(Request $request)
+    public function capture()
 {
-    $request->validate([
-        'order_id' => 'required',
-        'image' => 'required',
-    ]);
-
-    // Ambil order untuk mendapatkan order_code
-    $order = Order::findOrFail($request->order_id);
-    $orderCode = $order->order_code;
-
-    // Ambil base64 dan convert ke file
-    $imageData = $request->input('image');
-
-    // Deteksi tipe: png / jpeg
-    if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $type)) {
-        $imageData = substr($imageData, strpos($imageData, ',') + 1);
-        $type = strtolower($type[1]);
-    } else {
-        $type = 'png';
-    }
-
-    $imageData = str_replace(' ', '+', $imageData);
-    $imageName = uniqid() . '.' . $type;
-
-    Storage::disk('public')->put("cloud_gallery/{$orderCode}/{$imageName}", base64_decode($imageData));
-
-    // Simpan ke database
-    $gallery = CloudGallery::create([
-        'order_id' => $request->order_id,
-        'img_path' => "cloud_gallery/{$orderCode}/{$imageName}"
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'url' => asset("storage/cloud_gallery/{$orderCode}/{$imageName}"), // frontend pakai URL
-        'id' => $gallery->id
-    ]);
-}
-public function deleteSinglePhoto(Request $request)
-{
-    $request->validate([
-        'order_id' => 'required',
-        'image_url' => 'required',
-    ]);
-
-    // image_url datang dari client dalam bentuk URL (asset('storage/...'))
-    $relativePath = str_replace(asset('storage') . '/', '', $request->image_url);
-
-    $photo = CloudGallery::where('order_id', $request->order_id)
-                ->where('img_path', $relativePath)
-                ->first();
-
-    if ($photo) {
-        // hapus file fisik dari storage
-        if (\Storage::disk('public')->exists($photo->img_path)) {
-            \Storage::disk('public')->delete($photo->img_path);
-        }
-
-        // hapus record dari database
-        $photo->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Foto berhasil dihapus'
-        ]);
-    }
-
-    return response()->json([
-        'success' => false,
-        'message' => 'Foto tidak ditemukan'
-    ]);
+    $res = Http::get('http://localhost:5513/?CMD=Capture');
+    return response($res->body(), $res->status());
 }
 
-
-public function deleteAll(Request $request)
+public function preview()
 {
-    $request->validate([
-        'order_id' => 'required',
-    ]);
-
-    $photos = CloudGallery::where('order_id', $request->order_id)->get();
-
-    foreach ($photos as $photo) {
-        if (Storage::disk('public')->exists($photo->img_path)) {
-            Storage::disk('public')->delete($photo->img_path);
-        }
-        $photo->delete();
-    }
-
-    return response()->json(['success' => true]);
-}
-
-
-public function show($order_code)
-{
-    $order = Order::where('order_code', $order_code)->firstOrFail();
-    $photos = $order->cloudGallery()->get(); // relasi ke photos
-
-    // Tanggal mulai dan berakhir
-    $startDate = $order->created_at;
-    $endDate = $order->created_at->copy()->addDays(7);
-
-    return view('gallery.show', compact('order', 'photos', 'startDate', 'endDate'));
-}
-
-
-public function download($order_code, $photo)
-{
-    $path = "cloud_gallery/{$order_code}/{$photo}";
-
-    if (!Storage::disk('public')->exists($path)) {
-        abort(404, 'File not found');
-    }
-
-    return Storage::disk('public')->download($path, $photo);
+    $res = Http::get('http://localhost:5513/preview.jpg');
+    return response($res->body(), 200)->header('Content-Type', 'image/jpeg');
 }
 
 

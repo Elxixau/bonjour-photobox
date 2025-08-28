@@ -73,9 +73,5 @@ Route::get('/preview/{orderCode}', [PageController::class, 'preview'])->name('pr
 Route::get('/gallery/{order_code}/download/{path}', [PhotoController::class, 'download'])
     ->where('path', '.*')
     ->name('gallery.download');
-
-Route::prefix('proxy')->group(function(){
-    Route::get('capture/{orderId}', [DigicamController::class,'captureByOrder']);
-    Route::get('set-filename/{orderId}/{filename}', [DigicamController::class,'setFilenameByOrder']);
-    Route::get('preview/{orderId}', [DigicamController::class,'previewByOrder']);
-});
+Route::get('/proxy/capture', [IGicamController::class, 'capture']);
+Route::get('/proxy/preview', [IGicamController::class, 'preview']);
