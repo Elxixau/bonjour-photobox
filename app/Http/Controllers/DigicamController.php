@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DigicamController extends Controller
 {   // IP komputer box iGicam
-    protected $kategoriIP = '192.168.18.43:5513';
+   protected $ip = '192.168.18.43:5513';
 
     protected function getIP($orderId)
     {
