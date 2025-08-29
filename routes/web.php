@@ -73,7 +73,7 @@ Route::get('/preview/{orderCode}', [PageController::class, 'preview'])->name('pr
 
 Route::prefix('gallery')->group(function () {
     Route::get('{order_code}', [PhotoController::class, 'show'])->name('gallery.show');
-Route::get('/gallery/download/{photo}', [GalleryController::class, 'download'])
+Route::get('/gallery/download/{photo}', [PhotoController::class, 'download'])
     ->where('photo', '.*') // <-- menangkap semua path termasuk folder
     ->name('photo.download');
 
