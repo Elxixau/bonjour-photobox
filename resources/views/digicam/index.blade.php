@@ -3,11 +3,6 @@
 @section('content')
 <div class="container mx-auto p-4 text-center">
     <h1 class="text-2xl font-bold mb-4">DigiCam Capture via WebSocket</h1>
-
-    <!-- Live preview -->
-    <video id="liveVideo" autoplay playsinline class="w-full max-w-md mx-auto rounded-lg border border-gray-300 mb-4"></video>
-    <p id="previewStatus" class="text-sm text-gray-500 mb-6"></p>
-
     <button id="captureBtn" class="px-6 py-3 bg-blue-500 text-white rounded-lg">Capture</button>
     <p id="status" class="mt-4 text-gray-700"></p>
     <div id="previewContainer" class="mt-4 grid grid-cols-2 gap-4"></div>
@@ -15,24 +10,6 @@
 
 <script>
     const orderCode = '{{ $order->order_code }}'; // ambil dari controller
-
-    // -----------------------------
-    // 1. Live Preview (pisah proses)
-    // -----------------------------
-    const videoEl = document.getElementById("liveVideo");
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-        .then(stream => {
-            videoEl.srcObject = stream;
-            document.getElementById("previewStatus").innerText = "Live preview aktif";
-        })
-        .catch(err => {
-            console.error("Cannot access camera:", err);
-            document.getElementById("previewStatus").innerText = "Tidak bisa akses kamera";
-        });
-
-    // -----------------------------
-    // 2. WebSocket Capture
-    // -----------------------------
     const ws = new WebSocket("ws://localhost:3000");
 
     ws.onopen = function() {
