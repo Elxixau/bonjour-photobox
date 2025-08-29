@@ -1,53 +1,31 @@
 @extends('layouts.app')
 
 @section('content')
-@php
-    $layout = $layout ?? 4;
-    $orderId = $order->id ?? '';
-@endphp
-
-<div class="max-w-6xl mx-auto mt-6 text-center space-x-4">
-    <button id="captureBtn" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300">
-        Ambil Foto
-    </button>
-    <button id="reset" class="px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Capture Ulang</button>
-    <button id="nextBtn" class="px-6 py-3 bg-white text-black font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Selanjutnya</button>
-
-    {{-- 🔹 Tombol test WebSocket --}}
-    <button id="wsTestBtn" class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300">
-        Tes WebSocket
-    </button>
+<div class="container mx-auto p-4">
+    <h1 class="text-xl font-bold mb-4">DigiCam Capture via WebSocket</h1>
+    <button id="captureBtn" class="px-4 py-2 bg-blue-500 text-white rounded">Capture</button>
+    <p id="status" class="mt-4 text-gray-700"></p>
 </div>
 
 <script>
-    // 🔹 koneksi ke WebSocket server (ganti URL sesuai server kamu)
-    const ws = new WebSocket("ws://localhost:8080");
+    let ws = new WebSocket("ws://localhost:3000");
 
     ws.onopen = function() {
-        console.log("✅ Terhubung ke WebSocket");
+        console.log("Connected to WebSocket");
+        document.getElementById("status").innerText = "Connected to server";
     };
 
     ws.onmessage = function(event) {
-        console.log("📩 Pesan dari server:", event.data);
-        alert("Pesan dari server: " + event.data);
-    };
-
-    ws.onerror = function(err) {
-        console.error("⚠️ WebSocket error:", err);
+        console.log("Message from server:", event.data);
+        document.getElementById("status").innerText = event.data;
     };
 
     ws.onclose = function() {
-        console.warn("❌ WebSocket ditutup");
+        document.getElementById("status").innerText = "Disconnected from server";
     };
 
-    // 🔹 button Tes WebSocket
-    document.getElementById("wsTestBtn").addEventListener("click", () => {
-        if(ws.readyState === WebSocket.OPEN){
-            ws.send("hi"); // contoh kirim pesan "hi"
-            console.log("📝 Kirim: hi");
-        } else {
-            alert("WebSocket belum terhubung");
-        }
+    document.getElementById("captureBtn").addEventListener("click", function() {
+        ws.send("capture");
     });
 </script>
 @endsection
