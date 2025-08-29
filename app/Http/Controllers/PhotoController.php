@@ -31,7 +31,7 @@ public function show($orderCode)
 
     
 // GalleryController.php
-public function download($order_code, $photo)
+public function download( $photo)
 {
     $filePath = storage_path('app/public/' . $photo);
     
