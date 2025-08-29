@@ -40,11 +40,9 @@
                         />
                     </div>
 
-                    <!-- Overlay tombol Download & Share -->
-                    <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
-                        <a href="{{ route('photo.download', $photo->img_path) }}"
+                <a href="{{ route('photo.download', ['photo' => $photo->img_path]) }}"
    class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition">
-   Download
+   Download File HD
 </a>
 
                         <button onclick="sharePhoto('{{ asset('storage/' . $photo->img_path) }}')" 
