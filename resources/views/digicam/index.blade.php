@@ -1,22 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto p-4">
-    <h1 class="text-xl font-bold mb-4">DigiCam Capture via WebSocket</h1>
-
-    <!-- Tombol Capture -->
-    <button id="captureBtn" class="px-4 py-2 bg-blue-500 text-white rounded">Capture</button>
-
-    <!-- Status koneksi dan pesan WebSocket -->
+<div class="container mx-auto p-4 text-center">
+    <h1 class="text-2xl font-bold mb-4">DigiCam Capture via WebSocket</h1>
+    <button id="captureBtn" class="px-6 py-3 bg-blue-500 text-white rounded-lg">Capture</button>
     <p id="status" class="mt-4 text-gray-700"></p>
-
-    <!-- Container preview foto -->
-    <h2 class="text-lg font-semibold mt-6 mb-2">Preview Foto:</h2>
-    <div id="previewContainer" class="grid grid-cols-3 gap-4"></div>
+    <div id="previewContainer" class="mt-4 grid grid-cols-2 gap-4"></div>
 </div>
 
 <script>
-    let ws = new WebSocket("ws://localhost:3000");
+    const orderCode = '{{ $order->order_code }}'; // ambil dari controller
+    const ws = new WebSocket("ws://localhost:3000");
 
     ws.onopen = function() {
         console.log("Connected to WebSocket");
@@ -25,21 +19,20 @@
 
     ws.onmessage = function(event) {
         console.log("Message from server:", event.data);
-        document.getElementById("status").innerText = event.data;
 
-        // Jika pesan berisi nama file baru, tampilkan preview
-        if(event.data.startsWith("New file captured:")) {
-            const fileName = event.data.replace("New file captured: ", "");
-            
-            // URL file harus mengarah ke Laravel storage/public
-            // Contoh: /storage/{order_code}/{fileName}
-            const imgUrl = `/storage/${fileName}`; 
-
-            const imgEl = document.createElement("img");
-            imgEl.src = imgUrl;
-            imgEl.className = "w-full h-auto rounded-lg border";
-
-            document.getElementById("previewContainer").prepend(imgEl);
+        // Jika server mengirim URL foto dari Laravel
+        try {
+            const msg = JSON.parse(event.data);
+            if (msg.url) {
+                const imgEl = document.createElement('img');
+                imgEl.src = msg.url;
+                imgEl.className = "w-full h-auto rounded-lg border border-gray-300";
+                document.getElementById("previewContainer").appendChild(imgEl);
+            } else {
+                document.getElementById("status").innerText = msg.message || event.data;
+            }
+        } catch {
+            document.getElementById("status").innerText = event.data;
         }
     };
 
@@ -48,7 +41,8 @@
     };
 
     document.getElementById("captureBtn").addEventListener("click", function() {
-        ws.send("capture");
+        // Kirim capture request beserta order_code
+        ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
     });
 </script>
 @endsection
