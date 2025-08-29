@@ -33,7 +33,7 @@ public function show($orderCode)
 public function download($photo)
 {
        // Ambil full path fisik file di storage
-    $filePath = Storage::disk('public')->path($photo->img_path);
+    $filePath = Storage::disk('public')->path($photo);
 
     if (!file_exists($filePath)) {
         abort(404);
