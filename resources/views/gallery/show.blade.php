@@ -28,7 +28,7 @@
         <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             @foreach ($photos as $photo)
                 @if($photo->img_path)
-                <div class="relative rounded-xl overflow-hidden shadow-lg mb-2 transform transition duration-300 hover:scale-105 active:scale-95 group">
+                <div class="relative  overflow-hidden  mb-2 transform transition duration-300 hover:scale-105 active:scale-95 group">
                     <!-- Preview foto HD -->
                     <div class="w-full">
                         <img 
