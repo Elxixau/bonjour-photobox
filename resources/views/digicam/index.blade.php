@@ -6,6 +6,7 @@
     <button id="captureBtn" class="px-4 py-2 bg-blue-500 text-white rounded">Capture</button>
     <p id="status" class="mt-4 text-gray-700"></p>
 </div>
+
 <script>
     const orderCode = '{{ $order->order_code }}'; // Laravel yang kirim order_code
     let ws = new WebSocket("ws://localhost:3000");
@@ -29,3 +30,5 @@
         ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
     });
 </script>
+
+@endsection
