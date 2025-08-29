@@ -20,7 +20,7 @@ public function show($orderCode)
         $order = Order::where('order_code', $orderCode)->firstOrFail();
 
         // Ambil foto-foto terkait order ini
-        $photos = Photo::where('order_id', $order->id)->get();
+        $photos = CloudGallery::where('order_id', $order->id)->get();
 
         // Tentukan startDate dan endDate, misal dari kolom order
         $startDate = $order->start_at ?? now();
@@ -32,7 +32,7 @@ public function show($orderCode)
     public function download($orderCode, $filename)
     {
         $order = Order::where('order_code', $orderCode)->firstOrFail();
-        $photo = Photo::where('order_id', $order->id)
+        $photo = CloudGallery::where('order_id', $order->id)
                       ->where('img_path', 'like', "%{$filename}")
                       ->firstOrFail();
 
