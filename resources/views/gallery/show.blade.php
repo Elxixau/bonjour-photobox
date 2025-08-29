@@ -42,7 +42,7 @@
                      <a href="{{ asset('storage/' . $photo->img_path) }}" 
            download="{{ basename($photo->img_path) }}"
            class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition mt-2 inline-block">
-           Download HD
+           Download 
         </a>
 
 
