@@ -40,11 +40,11 @@
                     </div>
 
                     <div class="flex justify-between mt-2 px-3 pb-3">
-                        <!-- Tombol Download HD -->
                         <a href="{{ route('photo.download', ['photo' => $photo->img_path]) }}"
-                           class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition">
-                           Download HD
-                        </a>
+   class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition">
+   Download 
+</a>
+
 
                         <!-- Tombol Share -->
                         <button onclick="sharePhoto('{{ asset('storage/' . $photo->img_path) }}')" 

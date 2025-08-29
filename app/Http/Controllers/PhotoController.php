@@ -38,8 +38,7 @@ public function download($photo)
         abort(404);
     }
 
-    // Memaksa browser untuk mengunduh file, bukan membuka di tab
-    return response()->download($filePath, basename($filePath));
+    return response()->download($filePath, basename($photo));
 }
 
 }
