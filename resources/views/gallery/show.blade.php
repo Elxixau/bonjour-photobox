@@ -39,16 +39,16 @@
                         />
                     </div>
 
-                     <a href="{{ asset('storage/' . $photo->img_path) }}" 
-           download="{{ basename($photo->img_path) }}"
-           class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition mt-2 inline-block">
-           Download 
-        </a>
+                    <a href="{{ asset('storage/' . $photo->img_path) }}" 
+                        download="{{ basename($photo->img_path) }}"
+                        class="mt-1 px-3 py-1 bg-green-300 hover:bg-green-500 text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition mt-2 inline-block">
+                        Download 
+                    </a>
 
 
                         <!-- Tombol Share -->
                         <button onclick="sharePhoto('{{ asset('storage/' . $photo->img_path) }}')" 
-                                class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition">
+                                class="px-3 py-1 bg-green-300 hover:bg-green-500 text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition">
                             Share
                         </button>
                     </div>
