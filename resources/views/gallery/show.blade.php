@@ -41,7 +41,7 @@
 
                     <div class="flex justify-between mt-2 px-3 pb-3">
                         <a href="{{ route('photo.download', ['photo' => $photo->img_path]) }}"
-   class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition">
+   class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition " target="_blank">
    Download 
 </a>
 
