@@ -73,5 +73,8 @@ Route::get('/preview/{orderCode}', [PageController::class, 'preview'])->name('pr
 
 Route::prefix('gallery')->group(function () {
     Route::get('{order_code}', [PhotoController::class, 'show'])->name('gallery.show');
-    Route::get('download/{photo}', [PhotoController::class, 'download'])->name('gallery.download');
+   Route::get('download/{photo}', [PhotoController::class, 'download'])
+     ->where('photo', '.*')  // <- ini penting
+     ->name('gallery.download');
+
 });
