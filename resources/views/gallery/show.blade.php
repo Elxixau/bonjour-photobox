@@ -29,30 +29,30 @@
     @else
         <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             @foreach ($photos as $photo)
-                <div class="relative rounded-xl overflow-hidden shadow-lg bg-white transform transition duration-300 hover:scale-105 active:scale-95 aspect-[6/4] group">
-                    <img 
-                        src="{{ asset('storage/' . $photo->img_path) }}" 
-                        alt="Foto {{ $loop->iteration }}" 
-                        loading="lazy" 
-                        class="w-full h-full object-cover"
-                    />
+                <div class="relative rounded-xl overflow-hidden shadow-lg bg-white transform transition duration-300 hover:scale-105 active:scale-95 group">
+                    <!-- Container fleksibel mengikuti rasio asli foto -->
+                    <div class="w-full">
+                        <img 
+                            src="{{ asset('storage/' . $photo->img_path) }}" 
+                            alt="Foto {{ $loop->iteration }}" 
+                            loading="lazy" 
+                            class="w-full h-auto object-contain rounded-lg"
+                        />
+                    </div>
+
                     <!-- Overlay tombol Download & Share -->
                     <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
-                        <!-- Download -->
-                            <a
-  href="{{ route('gallery.download', [
-      'order_code' => $order->order_code,
-      'photo' => basename($photo->img_path) // atau $photo->filename kalau ada
-  ]) }}"
-  download="{{ basename($photo->img_path) }}"
-  class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition"
->
-  Download
-</a>
+                        <a
+                            href="{{ route('gallery.download', [
+                                'order_code' => $order->order_code,
+                                'photo' => basename($photo->img_path)
+                            ]) }}"
+                            download="{{ basename($photo->img_path) }}"
+                            class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition"
+                        >
+                            Download
+                        </a>
 
-
-
-                        <!-- Share -->
                         <button onclick="sharePhoto('{{ asset('storage/' . $photo->img_path) }}')" 
                            class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition">
                             Share
@@ -67,6 +67,7 @@
 <footer class="max-w-5xl mx-auto mt-16 text-center text-gray-400 text-sm select-none px-4 pb-6">
     &copy; {{ date('Y') }} Your Company. All rights reserved.
 </footer>
+
 
 <script>
 function sharePhoto(url) {
@@ -83,6 +84,7 @@ function sharePhoto(url) {
     }
 }
 </script>
+
 
 </body>
 </html>
