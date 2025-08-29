@@ -31,15 +31,17 @@ public function show($orderCode)
 
     
 // GalleryController.php
-public function download( $photo)
+public function download($photo)
 {
     $filePath = storage_path('app/public/' . $photo);
     
     if (!file_exists($filePath)) {
         abort(404);
     }
-    
- // Memaksa browser untuk mendownload
-    return response()->download($filePath, basename($photo));
+
+    return response()->file($filePath, [
+        'Content-Type' => mime_content_type($filePath),
+        'Content-Disposition' => 'attachment; filename="' . basename($filePath) . '"'
+    ]);
 }
 }
