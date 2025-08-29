@@ -32,13 +32,14 @@ public function show($orderCode)
     
 public function download($photo)
 {
-    $filePath = storage_path('app/public/' . $photo);
+       // Ambil full path fisik file di storage
+    $filePath = Storage::disk('public')->path($photo->image);
 
     if (!file_exists($filePath)) {
         abort(404);
     }
 
-    return response()->download($filePath, basename($photo));
+    return response()->download($filePath, basename($filePath));
 }
 
 }
