@@ -29,13 +29,16 @@ public function show($orderCode)
         return view('gallery.show', compact('order', 'photos', 'startDate', 'endDate'));
     }
 
-    public function download($orderCode, $filename)
-    {
-        $order = Order::where('order_code', $orderCode)->firstOrFail();
-        $photo = CloudGallery::where('order_id', $order->id)
-                      ->where('img_path', 'like', "%{$filename}")
-                      ->firstOrFail();
-
-        return response()->download(storage_path('app/public/' . $photo->img_path));
+    
+// GalleryController.php
+public function download($order_code, $photo)
+{
+    $filePath = storage_path('app/public/' . $photo);
+    
+    if (!file_exists($filePath)) {
+        abort(404);
     }
+    
+    return response()->download($filePath);
+}
 }
