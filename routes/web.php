@@ -66,9 +66,12 @@ Route::post('/photo/delete-all', [PhotoController::class, 'deleteAll'])->name('d
 Route::post('/upload-final/{orderCode}', [PhotoController::class, 'uploadFinal'])->name('upload.final');
 Route::get('/filter/{orderCode}', [AssetController::class, 'filter'])->name('filter.index');
 Route::post('/sticker/export/{orderCode}', [AssetController::class, 'export'])->name('sticker.export');
-Route::get('/gallery/{order_code}', [PhotoController::class, 'show'])->name('gallery.show');
 Route::get('/order/{order_code}/qr-data', [PageController::class, 'getQrData'])->name('orders.qr-data');
 Route::get('/preview/{orderCode}', [PageController::class, 'preview'])->name('preview.show');
-Route::get('/gallery/{order_code}/download/{path}', [PhotoController::class, 'download'])
-    ->where('path', '.*')
-    ->name('gallery.download');
+
+
+
+Route::prefix('gallery')->group(function () {
+    Route::get('/gallery/{order_code}', [PhotoController::class, 'show'])->name('gallery.show');
+    Route::get('{order_code}/download/{photo}', [PhotoController::class, 'download'])->name('gallery.download');
+});

@@ -13,18 +13,29 @@ use Illuminate\Support\Facades\Storage;
 
 class PhotoController extends Controller
 {
-    public function capture()
-{
-    $res = Http::get('http://127.0.0.1:5513/?CMD=Capture');
-    return response($res->body(), $res->status());
-}
 
-public function preview()
-{
-    $res = Http::get('http://127.0.0.1:5513/preview.jpg');
-    return response($res->body(), 200)->header('Content-Type', 'image/jpeg');
-}
+public function show($orderCode)
+    {
+        // Cari order berdasarkan order_code
+        $order = Order::where('order_code', $orderCode)->firstOrFail();
 
+        // Ambil foto-foto terkait order ini
+        $photos = Photo::where('order_id', $order->id)->get();
 
+        // Tentukan startDate dan endDate, misal dari kolom order
+        $startDate = $order->start_at ?? now();
+        $endDate = $order->end_at ?? now()->addDays(7);
 
+        return view('gallery.show', compact('order', 'photos', 'startDate', 'endDate'));
+    }
+
+    public function download($orderCode, $filename)
+    {
+        $order = Order::where('order_code', $orderCode)->firstOrFail();
+        $photo = Photo::where('order_id', $order->id)
+                      ->where('img_path', 'like', "%{$filename}")
+                      ->firstOrFail();
+
+        return response()->download(storage_path('app/public/' . $photo->img_path));
+    }
 }
