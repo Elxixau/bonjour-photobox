@@ -39,6 +39,7 @@ public function download( $photo)
         abort(404);
     }
     
-    return response()->download($filePath);
+ // Memaksa browser untuk mendownload
+    return response()->download($filePath, basename($photo));
 }
 }
