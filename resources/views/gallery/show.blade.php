@@ -42,7 +42,7 @@
 
                     <!-- Overlay tombol Download & Share -->
                     <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
-                        <a href="{{ route('gallery.download', ['photo' => $photo->img_path]) }}"
+                        <a href="{{ route('photo.download', $photo->filename) }}"
    class="px-3 py-1 bg-white text-black rounded-md text-sm font-semibold hover:bg-gray-200 transition">
    Download
 </a>
