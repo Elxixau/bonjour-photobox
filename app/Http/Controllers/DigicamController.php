@@ -3,61 +3,44 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use App\Models\CloudGallery;
 use App\Models\Order;
-use Illuminate\Support\Facades\Http;
-use Symfony\Component\HttpFoundation\Response;
 
 class DigicamController extends Controller
-{   // IP komputer box iGicam
-   protected $ip = '192.168.18.43:5513';
-
-    protected function getIP($orderId)
+{ 
+        
+    public function uploadPhoto(Request $request)
     {
-        // Ambil kategori dari orderId (dummy contoh)
-        $kategori = 'portrait'; // nanti sesuaikan relasi order
-        return $this->kategoriIP[$kategori] ?? null;
-    }
+          $orderCode = $request->input('order_code');
+        $file = $request->file('file'); // hasil capture dikirim dari websocket / API
 
-    public function capture($orderId)
-    {
-        $ip = $this->getIP($orderId);
-        if(!$ip) return response('Kategori tidak valid', 400);
-
-        try {
-            $res = Http::get("http://$ip/?CMD=Capture");
-            return response($res->body(), $res->status());
-        } catch (\Exception $e) {
-            return response('Gagal konek ke kamera: '.$e->getMessage(), 500);
+        if (!$orderCode || !$file) {
+            return response()->json(['error' => 'Order code atau file tidak ada'], 400);
         }
-    }
 
-    public function setFilename($orderId, $filename)
-    {
-        $ip = $this->getIP($orderId);
-        if(!$ip) return response('Kategori tidak valid', 400);
-
-        try {
-            $res = Http::get("http://$ip/?slc=set&param1=session.filenametemplate&param2=$filename");
-            return response($res->body(), $res->status());
-        } catch (\Exception $e) {
-            return response('Gagal set filename: '.$e->getMessage(), 500);
+        // Cari order berdasarkan order_code
+        $order = Order::where('order_code', $orderCode)->first();
+        if (!$order) {
+            return response()->json(['error' => 'Order tidak ditemukan'], 404);
         }
+
+        // Simpan file ke folder storage/app/public/{order_code}
+        $folderPath = $orderCode;
+        $fileName = time() . '_' . $file->getClientOriginalName();
+        $filePath = $file->storeAs($folderPath, $fileName, 'public');
+
+        // Simpan ke database
+        $gallery = CloudGallery::create([
+            'order_id' => $order->id,
+            'img_path' => $filePath
+        ]);
+
+        return response()->json([
+            'message' => 'File berhasil disimpan',
+            'data' => $gallery,
+            'url' => Storage::url($filePath) // -> /storage/{order_code}/{nama_file}.jpg
+        ]);
     }
 
-    public function preview($orderId)
-    {
-        $ip = $this->getIP($orderId);
-        if(!$ip) return response('Kategori tidak valid', 400);
-
-        try {
-            $res = Http::get("http://$ip/preview.jpg");
-            return response($res->body(), 200)
-                    ->header('Content-Type', 'image/jpeg');
-        } catch (\Exception $e) {
-            return response('Gagal ambil preview: '.$e->getMessage(), 500);
-        }
-    }
 }

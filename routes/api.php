@@ -11,6 +11,8 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-Route::post('/api/callback', [PaymentController::class, 'callback']);
-Route::get('/api/proxy/capture', [DigicamController::class, 'capture']);
-Route::get('/api/proxy/preview', [DigicamController::class, 'preview']);
+Route::post('/callback', [PaymentController::class, 'callback']);
+
+Route::post('/upload-photo', [DigicamController::class, 'uploadPhoto']);
+
+
