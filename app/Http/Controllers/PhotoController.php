@@ -57,11 +57,11 @@ class PhotoController extends Controller
     }
   public function upload(Request $request)
     { $request->validate([
-            'order_code' => 'required|string',
+            'order_id' => 'required|string',
             'image' => 'required|string', // base64
         ]);
 
-        $orderId = $request->order_code;
+        $orderId = $request->order_id;
 
         // folder di storage/public/ORD-{order_id}
         $orderFolder = 'ORD-' . $orderId;
