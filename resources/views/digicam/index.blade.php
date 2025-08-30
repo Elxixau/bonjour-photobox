@@ -6,8 +6,8 @@
 
     <!-- Grid Layout -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="">
- <!-- Left: Live preview -->
+        
+        <!-- Left: Live preview -->
         <div class="relative w-full">
             <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
 
@@ -16,17 +16,14 @@
                 class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none">
             </div>
 
-         
-            
-        </div>
-           <p id="previewStatus" class="text-sm text-gray-500 mt-2"></p>
+            <p id="previewStatus" class="text-sm text-gray-500 mt-2"></p>
 
-        <div class="mt-4 text-center">
+            <div class="mt-4 text-center">
                 <button id="captureBtn" class="px-6 py-3 bg-blue-500 text-white rounded-lg">Capture</button>
                 <p id="status" class="mt-4 text-gray-700"></p>
             </div>
         </div>
-       
+
         <!-- Right: Foto hasil -->
         <div>
             <h2 class="text-lg font-semibold mb-2">Preview Foto</h2>
@@ -74,52 +71,31 @@
         document.getElementById("status").innerText = "Connected to server";
     };
 
-   ws.onmessage = function(event) {
-    try {
-        const msg = JSON.parse(event.data);
-        if (msg.url) {
-            const originalImg = new Image();
-            originalImg.crossOrigin = "Anonymous"; // kalau perlu
-            originalImg.onload = function() {
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
+    ws.onmessage = function(event) {
+        try {
+            const msg = JSON.parse(event.data);
+            if (msg.url) {
+                const imgEl = document.createElement('img');
+                imgEl.src = msg.url + '?t=' + new Date().getTime();
+                imgEl.className = "w-full h-full rounded-lg border border-gray-300 object-cover";
 
-                // Atur ukuran kecil untuk preview (misalnya max 400px)
-                const maxW = 400;
-                const scale = maxW / originalImg.width;
-                canvas.width = maxW;
-                canvas.height = originalImg.height * scale;
-
-                ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
-
-                // Convert ke JPEG dengan kualitas rendah (0.3 = 30%)
-                const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.3);
-
-                // Buat img element dari hasil kompres
-                const previewImg = document.createElement("img");
-                previewImg.src = compressedDataUrl;
-                previewImg.className = "w-full h-full rounded-lg border border-gray-300 object-cover";
-
-                // Cari placeholder pertama yang kosong
+                // cari placeholder pertama yang kosong
                 const placeholders = document.querySelectorAll("#previewContainer div");
                 for (let i = 0; i < placeholders.length; i++) {
                     if (!placeholders[i].dataset.filled) {
                         placeholders[i].innerHTML = "";
-                        placeholders[i].appendChild(previewImg);
+                        placeholders[i].appendChild(imgEl);
                         placeholders[i].dataset.filled = "true";
                         break;
                     }
                 }
-            };
-            originalImg.src = msg.url + '?t=' + new Date().getTime();
-        } else {
-            document.getElementById("status").innerText = msg.message || event.data;
+            } else {
+                document.getElementById("status").innerText = msg.message || event.data;
+            }
+        } catch {
+            document.getElementById("status").innerText = event.data;
         }
-    } catch {
-        document.getElementById("status").innerText = event.data;
-    }
-};
-
+    };
 
     ws.onclose = function() {
         document.getElementById("status").innerText = "Disconnected from server";
