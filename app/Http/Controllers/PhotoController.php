@@ -83,10 +83,11 @@ class PhotoController extends Controller
         }
 
         $filename = time() . '_' . Str::random(8) . '.' . $type;
-        $folder = "orders/{$orderId}";
+        $folder = "{$orderId}";
         Storage::put("public/{$folder}/{$filename}", $imageData);
 
-        $url = "/storage/{$folder}/{$filename}";
+       $url = asset("storage/{$folder}/{$filename}");
+
 
         $photo = CloudGallery::create([
             'order_id' => $orderId,
