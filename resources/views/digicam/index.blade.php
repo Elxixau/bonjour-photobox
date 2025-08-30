@@ -75,21 +75,20 @@ ws.onopen = () => {
     document.getElementById("status").innerText = "Connected to server";
     // auto-capture disabled
 };
-
 ws.onmessage = function(event) {
     try {
         const msg = JSON.parse(event.data);
-        if (msg.thumb_url && msg.id) {
+        if (msg.url && msg.id) { // gunakan url asli
             const slot = previewContainer.children[currentIndex];
             slot.innerHTML = "";
 
-            // Thumbnail
+            // Foto asli langsung
             const imgEl = document.createElement('img');
-            imgEl.src = msg.thumb_url;
+            imgEl.src = msg.url + '?t=' + new Date().getTime();
             imgEl.className = "w-full h-full rounded-lg border border-gray-300 object-cover";
             slot.appendChild(imgEl);
 
-            // Recapture button pojok kanan atas
+            // Tombol recapture pojok kanan atas
             const recBtn = document.createElement('button');
             recBtn.innerHTML = "🔄";
             recBtn.className = "absolute top-1 right-1 bg-white/80 px-1 rounded text-sm hover:bg-white/100";
@@ -107,6 +106,7 @@ ws.onmessage = function(event) {
         document.getElementById("status").innerText = event.data;
     }
 };
+
 
 ws.onclose = () => {
     document.getElementById("status").innerText = "Disconnected from server";
