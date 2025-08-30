@@ -64,9 +64,14 @@
     <button id="reset" class="px-6 py-3  bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Capture Ulang</button>
     <button id="nextBtn" class="px-6 py-3  bg-white text-black font-semibold py-2 px-4 rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Selanjutnya</button>
 </div>
+
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+(() => {
     const video = document.getElementById('video');
+    
+   video.style.filter = " contrast(1.2) saturate(1.2)";
+
+
     const timerEl = document.getElementById('timer');
     const info = document.getElementById('info');
     const resetBtn = document.getElementById('reset');
@@ -76,22 +81,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const orientationBtn = document.getElementById('orientationBtn');
     const orientationIcon = document.getElementById('orientationIcon');
 
-    if (!video || !timerEl || !info || !previewContainer || !globalTimerEl) {
-        console.error("Beberapa elemen tidak ditemukan di DOM, script dihentikan.");
-        return;
-    }
-
-    video.style.filter = "contrast(1.2) saturate(1.2)";
-
     const durasi = {{ $durasi }};
     const totalPhotos = {{ $layout }};
     const orderId = "{{ $order->id }}";
     let totalWaktu = {{ $totalWaktu }};
+
     let countdown = durasi;
-    let timerInterval, globalTimerInterval;
+    let timerInterval;
+    let globalTimerInterval;
     let stream, track, imageCapture;
-    let isPortrait = "{{ $orientasi }}"?.trim() === 'portrait';
-    let isMirror = true;
+ let isPortrait = "{{ $orientasi }}"?.trim() === 'portrait';
+ 
+
+    console.log("Orientasi dari DB:", "{{ $orientasi }}", "isPortrait:", isPortrait);
+
+    let isMirror = true; // langsung mirror dari awal
     let capturedImages = Array(totalPhotos).fill(null);
 
     function formatTime(sec) {
@@ -119,134 +123,330 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateVideoTransform() {
-        if (!video) return;
         video.style.transformOrigin = 'center center';
         let rotateDeg = isPortrait ? 90 : 0;
         let scaleX = (isMirror && !isPortrait) ? -1 : 1;
         let scaleY = (isMirror && isPortrait) ? -1 : 1;
         video.style.transform = `rotate(${rotateDeg}deg) scale(${scaleX}, ${scaleY})`;
     }
+function renderPreview() {
+    previewContainer.innerHTML = '';
+    for (let i = 0; i < totalPhotos; i++) {
+        const box = document.createElement('div');
+        box.className = `relative flex items-center justify-center bg-gray-100 rounded-xl shadow-lg aspect-[3/4] border-2 border-dashed border-gray-300`;
 
-    function renderPreview() {
-        if (!previewContainer) return;
-        previewContainer.innerHTML = '';
-        for (let i = 0; i < totalPhotos; i++) {
-            const box = document.createElement('div');
-            box.className = `relative flex items-center justify-center bg-gray-100 rounded-xl shadow-lg aspect-[3/4] border-2 border-dashed border-gray-300`;
+        if (capturedImages[i]) {
+            const img = document.createElement('img');
+            img.src = capturedImages[i];
+            img.className = "w-full h-full object-cover rounded-xl shadow-lg";
+            box.appendChild(img);
 
-            if (capturedImages[i]) {
-                const img = document.createElement('img');
-                img.src = capturedImages[i];
-                img.className = "w-full h-full object-cover rounded-xl shadow-lg";
-                box.appendChild(img);
-
-                // Tombol retake
-                const retakeBtn = document.createElement('button');
-                retakeBtn.textContent = "↺ Retake";
-                retakeBtn.className = "absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded";
-                retakeBtn.addEventListener('click', async () => {
-                    if (!capturedImages[i]) return;
-
-                    const { isConfirmed } = await Swal.fire({
-                        title: 'Lakukan Retake?',
-                        text: "Foto akan dihapus!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Ya, retake!',
-                        cancelButtonText: 'Batal',
-                    });
-                    if (!isConfirmed) return;
-
-                    try {
-                        const res = await fetch("{{ route('delete.single.photo') }}", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                            },
-                            body: JSON.stringify({
-                                order_id: orderId,
-                                image_url: capturedImages[i]
-                            })
-                        });
-                        const data = await res.json();
-                        if (data.success) {
-                            capturedImages[i] = null;
-                            renderPreview();
-                        } else {
-                            alert("Gagal menghapus foto di server!");
-                        }
-                    } catch (err) {
-                        console.error(err);
-                        alert("Terjadi error saat retake foto.");
-                    }
+            // Tombol retake per foto
+            const retakeBtn = document.createElement('button');
+            retakeBtn.textContent = "↺ Retake";
+            retakeBtn.className = "absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded";
+            retakeBtn.addEventListener('click', async () => {
+                const { isConfirmed } = await Swal.fire({
+                    title: 'lLakukan Retake?',
+                    text: "Foto akan dihapus!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, retake!',
+                    cancelButtonText: 'Batal',
                 });
-                box.appendChild(retakeBtn);
-            } else {
-                const numberCircle = document.createElement('div');
-                numberCircle.className = "w-16 h-16 flex items-center justify-center rounded-full border-4 border-gray-400 text-gray-500 text-2xl font-bold";
-                numberCircle.textContent = i + 1;
-                box.appendChild(numberCircle);
-            }
+                if(!isConfirmed) return;
 
-            previewContainer.appendChild(box);
-        }
+                // Hapus dari server
+                try {
+                    const res = await fetch("{{ route('delete.single.photo') }}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                        },
+                        body: JSON.stringify({
+                            order_id: orderId,
+                            image_url: capturedImages[i]
+                        })
+                    });
 
-        updateCounter();
-        resetBtn.classList.toggle('hidden', !capturedImages.some(i => i));
-        nextBtn.classList.toggle('hidden', !capturedImages.some(i => i));
-    }
+                    const data = await res.json();
+                    if(data.success){
+                        capturedImages[i] = null;
+                        renderPreview();
 
-    async function startCamera() {
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: { ideal: 3840 }, height: { ideal: 2160 }, frameRate: { ideal: 60 } },
-                audio: false
+                        // langsung ulangi capture untuk slot ini
+                        countdown = durasi;
+                        timerEl.textContent = countdown;
+                        clearInterval(timerInterval);
+                        timerInterval = setInterval(() => {
+                            countdown--;
+                            timerEl.textContent = countdown;
+                            if (countdown <= 0) {
+                                clearInterval(timerInterval);
+                                takeSnapshot().then(() => {
+                                    renderPreview();
+                                });
+                            }
+                        }, 1000);
+                    } else {
+                        alert("Gagal menghapus foto di server!");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Terjadi error saat retake foto.");
+                }
             });
-            video.srcObject = stream;
-            track = stream.getVideoTracks()[0];
-            try { imageCapture = new ImageCapture(track); } catch { imageCapture = null; }
-            updateVideoTransform();
-        } catch (err) {
-            console.error(err);
-            info.textContent = "Gagal mengakses kamera";
+
+            box.appendChild(retakeBtn);
+        } else {
+            const numberCircle = document.createElement('div');
+            numberCircle.className = "w-16 h-16 flex items-center justify-center rounded-full border-4 border-gray-400 text-gray-500 text-2xl font-bold";
+            numberCircle.textContent = i + 1;
+            box.appendChild(numberCircle);
         }
+
+        previewContainer.appendChild(box);
     }
 
-    // Event listeners
-    resetBtn?.addEventListener('click', async () => {
-        if (!confirm("Reset semua foto?")) return;
+    updateCounter();
+    resetBtn.classList.toggle('hidden', !capturedImages.some(i => i));
+    nextBtn.classList.toggle('hidden', !capturedImages.some(i => i));
+}
+
+async function startCamera() {
+    try {
+        // Request video tanpa memaksakan resolusi
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                width: { ideal: 3840 },   // minta 4K
+                height: { ideal: 2160 },
+                frameRate: { ideal: 60 }
+            },
+            audio: false
+            });
+
+
+        video.srcObject = stream;
+        track = stream.getVideoTracks()[0];
+
+        // Ambil resolusi asli dari kamera
+        const settings = track.getSettings();
+        console.log("Camera settings:", settings);
+
         try {
-            const res = await fetch("{{ route('delete.all.photos') }}", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" },
-                body: JSON.stringify({ order_id: orderId })
+            imageCapture = new ImageCapture(track);
+        } catch (e) {
+            imageCapture = null;
+        }
+
+        updateVideoTransform();
+        startAutoCapture();
+
+    } catch (err) {
+        console.error(err);
+        info.textContent = "Gagal mengakses kamera";
+    }
+}
+
+
+    function loadImageFromBlob(blob) {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(blob);
+            const img = new Image();
+            img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+            img.onerror = reject;
+            img.src = url;
+        });
+    }
+    
+   async function takeSnapshot() {
+    try {
+        if (video.readyState < 2) {
+            await new Promise(resolve => video.onloadedmetadata = resolve);
+        }
+
+        let vidWidth = video.videoWidth;
+        let vidHeight = video.videoHeight;
+const scaleFactor = 1; // skala 2x
+
+// Canvas mengikuti orientasi
+const outputCanvas = document.createElement('canvas');
+if (isPortrait) {
+    outputCanvas.width = vidHeight * scaleFactor;
+    outputCanvas.height = vidWidth * scaleFactor;
+} else {
+    outputCanvas.width = vidWidth * scaleFactor;
+    outputCanvas.height = vidHeight * scaleFactor;
+}
+
+const ctx = outputCanvas.getContext('2d');
+ctx.save();
+
+// Tambahkan filter brightness & contrast
+ctx.filter = "brightness(1.5) contrast(1.2) saturate(1.2)";
+
+// Skala context sesuai scaleFactor
+ctx.scale(scaleFactor, scaleFactor);
+
+if (isPortrait) {
+    ctx.translate(outputCanvas.width / (2*scaleFactor), outputCanvas.height / (2*scaleFactor));
+    ctx.rotate(90 * Math.PI / 180);
+    if (isMirror) ctx.scale(1, -1);
+    ctx.drawImage(video, -vidWidth / 2, -vidHeight / 2, vidWidth, vidHeight);
+} else {
+    if (isMirror) {
+        ctx.translate(vidWidth, 0);
+        ctx.scale(-1, 1);
+    }
+    ctx.drawImage(video, 0, 0, vidWidth, vidHeight);
+}
+
+ctx.restore();
+        // Konversi ke Blob JPEG
+        const blob = await new Promise(resolve => outputCanvas.toBlob(resolve, 'image/jpeg', 1.0));
+
+        // Convert ke base64
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async () => {
+            const base64data = reader.result;
+            const res = await fetch("{{ route('upload.photo') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ order_id: orderId, image: base64data })
             });
             const data = await res.json();
-            if (data.success) {
-                capturedImages = Array(totalPhotos).fill(null);
+            if (data.success && data.url) {
+                const emptyIndex = capturedImages.findIndex(i => !i);
+                if (emptyIndex !== -1) capturedImages[emptyIndex] = data.url;
                 renderPreview();
             }
-        } catch (err) { console.error(err); }
+        };
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+
+async function startAutoCaptureWithReminder() {
+    await Swal.fire({
+        title: 'Siap untuk sesi foto?',
+        html: `<p>Foto akan diambil otomatis dalam <strong>${durasi}</strong> detik, setelah mulai.</p>`,
+        showCancelButton: true,
+        confirmButtonText: 'Mulai',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        focusConfirm: false,
+        customClass: {
+            popup: 'rounded-xl border-3 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 p-6',
+            title: 'text-xl font-serif font-semibold text-gray-900',
+            htmlContainer: 'text-gray-700 text-sm mt-2',
+            confirmButton: 'bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition ml-2',
+            cancelButton: 'bg-gray-200 text-gray-800 px-6 py-2 rounded-md hover:bg-gray-300 transition'
+        },
+        buttonsStyling: false,
+        allowOutsideClick: false,
+        allowEscapeKey: false
     });
 
-    orientationBtn?.addEventListener('click', () => {
+    
+
+// update ikon sesuai orientasi awal
+    orientationIcon.style.transform = isPortrait ? 'rotate(0deg)' : 'rotate(90deg)';
+
+    startAutoCapture();
+    startCamera();
+    renderPreview();
+
+    startGlobalTimer();
+}
+
+
+
+    function startAutoCapture() {
+        let photoIndex = 0;
+        function captureLoop() {
+            if (photoIndex >= totalPhotos) return;
+            countdown = durasi;
+            timerEl.textContent = countdown;
+                  timerEl.classList.add("blink"); 
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                countdown--;
+                timerEl.textContent = countdown;
+                if (countdown <= 0) {
+                    clearInterval(timerInterval);
+                     timerEl.classList.remove("blink");
+                    takeSnapshot().then(() => {
+                        photoIndex++;
+                        captureLoop();
+                    });
+                }
+            }, 1000);
+        }
+        captureLoop();
+    }
+
+    resetBtn.addEventListener('click', async ()=>{
+         const { isConfirmed } = await Swal.fire({
+        title: 'Reset semua foto?',
+        text: "Semua foto akan dihapus!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, reset!',
+        cancelButtonText: 'Batal',
+    });
+    if(!isConfirmed) return;
+
+    try {
+        const res = await fetch("{{ route('delete.all.photos') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ order_id: orderId })
+        });
+
+        const data = await res.json();
+        if(data.success){
+            capturedImages = Array(totalPhotos).fill(null);
+            renderPreview();
+            await Swal.fire('Bersiap untuk capture ulang!', '', 'success');
+            startAutoCapture(); // langsung mulai auto capture lagi
+        } else {
+            await Swal.fire('Gagal reset foto!', '', 'error');
+        }
+    } catch (err) {
+        console.error(err);
+         await Swal.fire('erjadi error saat reset', '', 'error');
+    }
+});
+
+
+    orientationBtn.addEventListener('click', ()=>{
         isPortrait = !isPortrait;
         updateVideoTransform();
         orientationIcon.style.transform = isPortrait ? 'rotate(0deg)' : 'rotate(90deg)';
         renderPreview();
     });
 
-    nextBtn?.addEventListener('click', () => {
-        if (!capturedImages.some(i => i)) { alert("Belum ada foto!"); return; }
+    nextBtn.addEventListener('click', ()=>{
+        if(!capturedImages.some(i => i)){
+            alert("Belum ada foto yang diambil!");
+            return;
+        }
         window.location.href = `/filter/{{ $order->order_code }}`;
     });
 
-    // Start
-    startCamera();
-    renderPreview();
-    startGlobalTimer();
-});
+    
+    startAutoCaptureWithReminder();
+   
+})();
 </script>
-
 @endsection
