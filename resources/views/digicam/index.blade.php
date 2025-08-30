@@ -6,8 +6,8 @@
 
     <!-- Grid Layout -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        <!-- Left: Live preview -->
+        <div class="">
+ <!-- Left: Live preview -->
         <div class="relative w-full">
             <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
 
@@ -21,10 +21,12 @@
         </div>
            <p id="previewStatus" class="text-sm text-gray-500 mt-2"></p>
 
-<div class="mt-4 text-center">
+        <div class="mt-4 text-center">
                 <button id="captureBtn" class="px-6 py-3 bg-blue-500 text-white rounded-lg">Capture</button>
                 <p id="status" class="mt-4 text-gray-700"></p>
             </div>
+        </div>
+       
         <!-- Right: Foto hasil -->
         <div>
             <h2 class="text-lg font-semibold mb-2">Preview Foto</h2>
