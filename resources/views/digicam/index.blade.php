@@ -33,7 +33,20 @@
 </div>
 
 <script>
-    const orderCode = '{{ $order->order_code }}'; // ambil dari controller
+    const orderCode = '{{ $order->order_code }}'; 
+    const layoutCount = 4; // 👈 ubah jadi 4,6,7,8 sesuai kebutuhan
+
+    // -----------------------------
+    // Generate Placeholder Dinamis
+    // -----------------------------
+    const previewContainer = document.getElementById("previewContainer");
+    for (let i = 1; i <= layoutCount; i++) {
+        const slot = document.createElement("div");
+        slot.className = "w-full h-40 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 font-bold";
+        slot.textContent = i;
+        slot.dataset.index = i;
+        previewContainer.appendChild(slot);
+    }
 
     // -----------------------------
     // 1. Live Preview
@@ -55,22 +68,27 @@
     const ws = new WebSocket("ws://localhost:3000");
 
     ws.onopen = function() {
-        console.log("Connected to WebSocket");
         document.getElementById("status").innerText = "Connected to server";
     };
 
     ws.onmessage = function(event) {
-        console.log("Message from server:", event.data);
-
         try {
             const msg = JSON.parse(event.data);
             if (msg.url) {
                 const imgEl = document.createElement('img');
                 imgEl.src = msg.url + '?t=' + new Date().getTime();
-                imgEl.className = "w-full h-auto rounded-lg border border-gray-300 object-contain";
-                imgEl.loading = "eager";
-                imgEl.decoding = "sync";
-                document.getElementById("previewContainer").appendChild(imgEl);
+                imgEl.className = "w-full h-full rounded-lg border border-gray-300 object-cover";
+
+                // cari placeholder pertama yang kosong
+                const placeholders = document.querySelectorAll("#previewContainer div");
+                for (let i = 0; i < placeholders.length; i++) {
+                    if (!placeholders[i].dataset.filled) {
+                        placeholders[i].innerHTML = "";
+                        placeholders[i].appendChild(imgEl);
+                        placeholders[i].dataset.filled = "true";
+                        break;
+                    }
+                }
             } else {
                 document.getElementById("status").innerText = msg.message || event.data;
             }
