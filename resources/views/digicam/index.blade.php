@@ -37,11 +37,8 @@
 
 <script>
     const orderCode = '{{ $order->order_code }}'; 
-    const layoutCount = 4; // 👈 ubah jadi 4,6,7,8 sesuai kebutuhan
+    const layoutCount = 4; // jumlah slot preview
 
-    // -----------------------------
-    // Generate Placeholder Dinamis
-    // -----------------------------
     const previewContainer = document.getElementById("previewContainer");
     for (let i = 1; i <= layoutCount; i++) {
         const slot = document.createElement("div");
@@ -52,7 +49,7 @@
     }
 
     // -----------------------------
-    // 1. Live Preview
+    // Live Preview
     // -----------------------------
     const videoEl = document.getElementById("liveVideo");
     navigator.mediaDevices.getUserMedia({ video: true, audio: false })
@@ -66,23 +63,21 @@
         });
 
     // -----------------------------
-    // 2. WebSocket
+    // WebSocket
     // -----------------------------
     const ws = new WebSocket("ws://localhost:3000");
 
-    ws.onopen = function() {
-        document.getElementById("status").innerText = "Connected to server";
-    };
+    ws.onopen = () => document.getElementById("status").innerText = "Connected to server";
 
-    ws.onmessage = function(event) {
+    ws.onmessage = (event) => {
         try {
             const msg = JSON.parse(event.data);
             if (msg.url) {
+                // replace dengan hasil HD dari server
                 const imgEl = document.createElement('img');
                 imgEl.src = msg.url + '?t=' + new Date().getTime();
                 imgEl.className = "w-full h-full rounded-lg border border-gray-300 object-cover";
 
-                // cari placeholder pertama yang kosong
                 const placeholders = document.querySelectorAll("#previewContainer div");
                 for (let i = 0; i < placeholders.length; i++) {
                     if (!placeholders[i].dataset.filled) {
@@ -92,32 +87,27 @@
                         break;
                     }
                 }
-            } else {
-                document.getElementById("status").innerText = msg.message || event.data;
             }
         } catch {
             document.getElementById("status").innerText = event.data;
         }
     };
 
-    ws.onclose = function() {
-        document.getElementById("status").innerText = "Disconnected from server";
-    };
+    ws.onclose = () => document.getElementById("status").innerText = "Disconnected from server";
 
     // -----------------------------
-    // 3. Capture + Countdown
+    // Capture + Canvas Preview
     // -----------------------------
     const countdownOverlay = document.getElementById("countdownOverlay");
     const captureBtn = document.getElementById("captureBtn");
 
     captureBtn.addEventListener("click", function() {
-        let counter = 10;
+        let counter = 3;
 
         const showCountdown = () => {
             countdownOverlay.textContent = counter;
             countdownOverlay.classList.remove("opacity-0");
             countdownOverlay.classList.add("opacity-100");
-
             setTimeout(() => {
                 countdownOverlay.classList.remove("opacity-100");
                 countdownOverlay.classList.add("opacity-0");
@@ -133,9 +123,34 @@
             } else {
                 clearInterval(interval);
                 countdownOverlay.textContent = "";
+
+                // --- Capture ke canvas ---
+                const canvas = document.createElement("canvas");
+                canvas.width = videoEl.videoWidth;
+                canvas.height = videoEl.videoHeight;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+
+                const imgEl = document.createElement("img");
+                imgEl.src = canvas.toDataURL("image/jpeg", 0.9); // preview cepat
+                imgEl.className = "w-full h-full rounded-lg border border-gray-300 object-cover";
+
+                // masukkan ke slot kosong
+                const placeholders = document.querySelectorAll("#previewContainer div");
+                for (let i = 0; i < placeholders.length; i++) {
+                    if (!placeholders[i].dataset.filled) {
+                        placeholders[i].innerHTML = "";
+                        placeholders[i].appendChild(imgEl);
+                        placeholders[i].dataset.filled = "true";
+                        break;
+                    }
+                }
+
+                // --- kirim perintah capture ke server (hasil HD tetap dari WebSocket) ---
                 ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
             }
         }, 1000);
     });
 </script>
+
 @endsection
