@@ -5,14 +5,18 @@
     <h1 class="text-2xl font-bold mb-4">DigiCam Capture via WebSocket</h1>
 
     <!-- Live preview -->
-    <div class="relative w-full max-w-md mx-auto mb-4">
-        <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
+  <!-- Live preview -->
+<div class="relative w-full max-w-sm mx-auto mb-4">
+    <video id="liveVideo" autoplay playsinline 
+        class="w-full aspect-video rounded-lg border border-gray-300 object-cover">
+    </video>
 
-        <!-- Countdown overlay -->
-        <div id="countdownOverlay" 
-             class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none">
-        </div>
+    <!-- Countdown overlay -->
+    <div id="countdownOverlay" 
+         class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none">
     </div>
+</div>
+
     <p id="previewStatus" class="text-sm text-gray-500 mb-6"></p>
 
     <button id="captureBtn" class="px-6 py-3 bg-blue-500 text-white rounded-lg">Capture</button>
