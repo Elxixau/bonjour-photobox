@@ -1,27 +1,35 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto p-4 text-center">
-    <h1 class="text-2xl font-bold mb-4">DigiCam Capture via WebSocket</h1>
+<div class="container mx-auto p-4">
+    <h1 class="text-2xl font-bold mb-4 text-center">DigiCam Capture via WebSocket</h1>
 
-    <!-- Live preview -->
-  <!-- Live preview -->
-<div class="relative w-full max-w-sm mx-auto mb-4">
-    <video id="liveVideo" autoplay playsinline 
-        class="w-full aspect-video rounded-lg border border-gray-300 object-cover">
-    </video>
+    <!-- Grid Layout -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Left: Live preview -->
+        <div class="relative w-full">
+            <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
 
-    <!-- Countdown overlay -->
-    <div id="countdownOverlay" 
-         class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none">
+            <!-- Countdown overlay -->
+            <div id="countdownOverlay" 
+                class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none">
+            </div>
+
+            <p id="previewStatus" class="text-sm text-gray-500 mt-2"></p>
+
+            <div class="mt-4 text-center">
+                <button id="captureBtn" class="px-6 py-3 bg-blue-500 text-white rounded-lg">Capture</button>
+                <p id="status" class="mt-4 text-gray-700"></p>
+            </div>
+        </div>
+
+        <!-- Right: Foto hasil -->
+        <div>
+            <h2 class="text-lg font-semibold mb-2">Preview Foto</h2>
+            <div id="previewContainer" class="grid grid-cols-2 gap-4"></div>
+        </div>
     </div>
-</div>
-
-    <p id="previewStatus" class="text-sm text-gray-500 mb-6"></p>
-
-    <button id="captureBtn" class="px-6 py-3 bg-blue-500 text-white rounded-lg">Capture</button>
-    <p id="status" class="mt-4 text-gray-700"></p>
-    <div id="previewContainer" class="mt-4 grid grid-cols-2 gap-4"></div>
 </div>
 
 <script>
@@ -92,7 +100,7 @@
             setTimeout(() => {
                 countdownOverlay.classList.remove("opacity-100");
                 countdownOverlay.classList.add("opacity-0");
-            }, 500); // fade out tiap detik
+            }, 500);
         };
 
         showCountdown();
@@ -104,7 +112,6 @@
             } else {
                 clearInterval(interval);
                 countdownOverlay.textContent = "";
-                // Kirim capture ke server
                 ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
             }
         }, 1000);
