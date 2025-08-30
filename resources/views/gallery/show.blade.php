@@ -27,8 +27,8 @@
         <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             @foreach ($photos as $photo)
                 @if($photo->img_path)
-                <div class="relative group rounded-lg overflow-hidden">
-                    
+                <div class="relative rounded-lg overflow-hidden">
+
                     <!-- Foto -->
                     <img 
                         src="{{ asset('storage/' . $photo->img_path) }}" 
@@ -37,17 +37,17 @@
                         class="w-full h-auto object-contain rounded-lg"
                     />
 
-                    <!-- Tombol Aksi (Download & Share) -->
-                    <div class="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                    <!-- Tombol Aksi -->
+                    <div class="absolute top-2 right-2 flex gap-2">
                         
                         <!-- Download -->
                         <a href="{{ asset('storage/' . $photo->img_path) }}" 
                            download="{{ basename($photo->img_path) }}"
-                           class="p-2 bg-white rounded-full shadow hover:bg-gray-100">
+                           class="p-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600">
                             <svg xmlns="http://www.w3.org/2000/svg" 
                                  fill="none" viewBox="0 0 24 24" 
-                                 stroke-width="1.5" stroke="currentColor" 
-                                 class="w-5 h-5 text-gray-700">
+                                 stroke-width="2" stroke="currentColor" 
+                                 class="w-5 h-5">
                                 <path stroke-linecap="round" stroke-linejoin="round" 
                                       d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-6-6l-3 3m0 0l-3-3m3 3V3"/>
                             </svg>
@@ -55,14 +55,11 @@
 
                         <!-- Share -->
                         <button onclick="sharePhoto('{{ asset('storage/' . $photo->img_path) }}')" 
-                                class="p-2 bg-white rounded-full shadow hover:bg-gray-100">
-                            <svg xmlns="http://www.w3.org/2000/svg" 
-                                 fill="none" viewBox="0 0 24 24" 
-                                 stroke-width="1.5" stroke="currentColor" 
-                                 class="w-5 h-5 text-gray-700">
-                                <path stroke-linecap="round" stroke-linejoin="round" 
-                                      d="M4.5 12a7.5 7.5 0 0115 0m-7.5 9V3m0 18l-3-3m3 3l3-3"/>
-                            </svg>
+                                class="p-2 bg-gray-300 text-gray-700 rounded-md shadow hover:bg-gray-400">
+                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+</svg>
+
                         </button>
                     </div>
                 </div>
