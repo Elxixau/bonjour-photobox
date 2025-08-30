@@ -13,45 +13,34 @@ class DigicamController extends Controller
         
     public function uploadPhoto(Request $request)
     {
-           $orderCode = $request->input('order_code');
-        $file = $request->file('file');
+          $orderCode = $request->input('order_code');
+        $file = $request->file('file'); // hasil capture dikirim dari websocket / API
 
         if (!$orderCode || !$file) {
             return response()->json(['error' => 'Order code atau file tidak ada'], 400);
         }
 
-        // Cari order
+        // Cari order berdasarkan order_code
         $order = Order::where('order_code', $orderCode)->first();
         if (!$order) {
             return response()->json(['error' => 'Order tidak ditemukan'], 404);
         }
 
-        // Simpan file asli (HD)
+        // Simpan file ke folder storage/app/public/{order_code}
         $folderPath = $orderCode;
         $fileName = time() . '_' . $file->getClientOriginalName();
         $filePath = $file->storeAs($folderPath, $fileName, 'public');
 
-        // Buat thumbnail kualitas 40%
-        $thumbPath = $folderPath . '/thumb_' . $fileName;
-        $image = Image::make($file->getRealPath())
-            ->resize(400, null, function ($constraint) {
-                $constraint->aspectRatio();
-            })
-            ->encode('jpg', 40); // kualitas 40%
-
-        Storage::disk('public')->put($thumbPath, (string) $image);
-
-        // Simpan ke DB
+        // Simpan ke database
         $gallery = CloudGallery::create([
             'order_id' => $order->id,
             'img_path' => $filePath
         ]);
 
         return response()->json([
-            'message'   => 'File berhasil disimpan',
-            'data'      => $gallery,
-            'url'       => Storage::url($filePath),   // HD asli
-            'thumb_url' => Storage::url($thumbPath)   // Thumbnail 40%
+            'message' => 'File berhasil disimpan',
+            'data' => $gallery,
+            'url' => Storage::url($filePath) // -> /storage/{order_code}/{nama_file}.jpg
         ]);
     }
 

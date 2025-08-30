@@ -40,30 +40,19 @@ class PhotoController extends Controller
         }
 
         return response()->download($filePath, basename($filePath));
-    }public function deletePhoto(Request $request)
-{
-    $photoId = $request->input('id'); // id CloudGallery
-    $gallery = CloudGallery::find($photoId);
-
-    if (!$gallery) {
-        return response()->json(['error' => 'Foto tidak ditemukan'], 404);
     }
+    public function destroy($id)
+    {
+        $photo = Photo::findOrFail($id);
 
-    $filePath = $gallery->img_path;
-    $folder   = dirname($filePath);
-    $fileName = basename($filePath);
-    $thumbPath = $folder . '/thumb_' . $fileName;
+        // hapus file di storage
+        if ($photo->path && Storage::exists('public/' . $photo->path)) {
+            Storage::delete('public/' . $photo->path);
+        }
 
-    // Hapus file asli + thumbnail
-    Storage::disk('public')->delete([$filePath, $thumbPath]);
+        // hapus data di DB
+        $photo->delete();
 
-    // Hapus data dari DB
-    $gallery->delete();
-
-    return response()->json([
-        'message' => 'Foto berhasil dihapus',
-        'id' => $photoId
-    ]);
-}
-
+        return response()->json(['success' => true]);
+    }
 }
