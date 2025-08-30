@@ -69,7 +69,7 @@
 (() => {
     const video = document.getElementById('video');
     
-   video.style.filter = "brightness(1.5) contrast(1.2) saturate(1.2)";
+   video.style.filter = " contrast(1.2) saturate(1.2)";
 
 
     const timerEl = document.getElementById('timer');
