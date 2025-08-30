@@ -126,7 +126,7 @@ function startAutoCapture() {
 function recapture(slot, photoId) {
     if (!confirm("Apakah ingin capture ulang foto ini?")) return;
 
-    fetch("{{ route('photo.delete') }}", {
+    fetch("{{ route('photos.destroy') }}", {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json",
