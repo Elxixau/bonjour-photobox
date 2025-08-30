@@ -260,75 +260,56 @@ async function startCamera() {
         });
     }
     
-   async function takeSnapshot() {
+async function takeSnapshot() {
     try {
-        if (video.readyState < 2) {
+        // Tunggu video siap
+        if (video.videoWidth === 0 || video.videoHeight === 0) {
             await new Promise(resolve => video.onloadedmetadata = resolve);
         }
 
-        let vidWidth = video.videoWidth;
-        let vidHeight = video.videoHeight;
-const scaleFactor = 1; // skala 2x
+        console.log("Video size:", video.videoWidth, video.videoHeight);
 
-// Canvas mengikuti orientasi
-const outputCanvas = document.createElement('canvas');
-if (isPortrait) {
-    outputCanvas.width = vidHeight * scaleFactor;
-    outputCanvas.height = vidWidth * scaleFactor;
-} else {
-    outputCanvas.width = vidWidth * scaleFactor;
-    outputCanvas.height = vidHeight * scaleFactor;
-}
+        // Buat canvas sesuai ukuran video
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
-const ctx = outputCanvas.getContext('2d');
-ctx.save();
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-// Tambahkan filter brightness & contrast
-ctx.filter = "brightness(1.5) contrast(1.2) saturate(1.2)";
+        // Konversi canvas ke base64
+        const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
+        console.log("Snapshot captured, length:", dataUrl.length);
 
-// Skala context sesuai scaleFactor
-ctx.scale(scaleFactor, scaleFactor);
+        // Upload ke server
+        const res = await fetch("{{ route('upload.photo') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                order_id: orderId,
+                image: dataUrl
+            })
+        });
 
-if (isPortrait) {
-    ctx.translate(outputCanvas.width / (2*scaleFactor), outputCanvas.height / (2*scaleFactor));
-    ctx.rotate(90 * Math.PI / 180);
-    if (isMirror) ctx.scale(1, -1);
-    ctx.drawImage(video, -vidWidth / 2, -vidHeight / 2, vidWidth, vidHeight);
-} else {
-    if (isMirror) {
-        ctx.translate(vidWidth, 0);
-        ctx.scale(-1, 1);
-    }
-    ctx.drawImage(video, 0, 0, vidWidth, vidHeight);
-}
+        const data = await res.json();
+        if (data.success && data.url) {
+            // Simpan di slot kosong
+            const emptyIndex = capturedImages.findIndex(i => !i);
+            if (emptyIndex !== -1) capturedImages[emptyIndex] = data.url;
 
-ctx.restore();
-        // Konversi ke Blob JPEG
-        const blob = await new Promise(resolve => outputCanvas.toBlob(resolve, 'image/jpeg', 1.0));
-
-        // Convert ke base64
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = async () => {
-            const base64data = reader.result;
-            const res = await fetch("{{ route('upload.photo') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ order_id: orderId, image: base64data })
-            });
-            const data = await res.json();
-            if (data.success && data.url) {
-                const emptyIndex = capturedImages.findIndex(i => !i);
-                if (emptyIndex !== -1) capturedImages[emptyIndex] = data.url;
-                renderPreview();
-            }
-        };
+            renderPreview();
+            console.log("Foto berhasil diupload:", data.url);
+        } else {
+            console.error("Upload gagal:", data);
+            alert("Gagal upload foto ke server!");
+        }
 
     } catch (err) {
-        console.error(err);
+        console.error("Error capture:", err);
+        alert("Terjadi error saat mengambil foto.");
     }
 }
 
