@@ -9,9 +9,9 @@
             <!-- Live Preview -->
             <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
             
-            <!-- Countdown Overlay -->
+            <!-- Countdown Overlay (untuk live video saja) -->
             <div id="countdownOverlay" 
-                 class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none">
+                 class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none rounded-lg">
             </div>
 
             <!-- Capture Button (Floating Icon) -->
@@ -30,7 +30,7 @@
         <!-- Preview Foto -->
         <div>
             <h2 class="text-lg font-semibold mb-2">Preview Foto</h2>
-            <div id="previewContainer" class="grid grid-cols-2 gap-4"></div>
+            <div id="previewContainer" class="grid grid-cols-2 gap-4 relative"></div>
         </div>
     </div>
 </div>
@@ -50,10 +50,10 @@ for (let i = 1; i <= layoutCount; i++) {
     slot.textContent = i;
     slot.dataset.index = i;
 
-    // Tombol recapture
+    // Tombol recapture (tulisan)
     const recBtn = document.createElement('button');
-    recBtn.innerHTML = "🔄";
-    recBtn.className = "absolute top-1 right-1 bg-white/80 px-1 rounded text-sm hover:bg-white/100";
+    recBtn.innerText = "Recapture";
+    recBtn.className = "absolute top-1 right-1 bg-white/90 px-2 py-1 rounded text-xs font-semibold hover:bg-white transition";
     slot.appendChild(recBtn);
 
     recBtn.addEventListener("click", () => recapture(slot));
@@ -88,13 +88,11 @@ ws.onmessage = function(event) {
     try {
         msg = JSON.parse(event.data); // coba parse
     } catch (e) {
-        // Bukan JSON, tampilkan apa adanya
         document.getElementById("status").innerText = event.data;
         console.log("Plain text message:", event.data);
-        return; // hentikan eksekusi JSON logic
+        return;
     }
 
-    // lanjutkan jika msg adalah JSON
     if (msg.url) {
         const slot = previewContainer.children[currentIndex];
         slot.innerHTML = "";
@@ -106,10 +104,10 @@ ws.onmessage = function(event) {
 
         if (msg.id) slot.dataset.photoId = msg.id;
 
-        // Tombol recapture tetap
+        // tombol recapture
         const recBtn = document.createElement('button');
-        recBtn.innerHTML = "🔄";
-        recBtn.className = "absolute top-1 right-1 bg-white/80 px-1 rounded text-sm hover:bg-white/100";
+        recBtn.innerText = "Recapture";
+        recBtn.className = "absolute top-1 right-1 bg-white/90 px-2 py-1 rounded text-xs font-semibold hover:bg-white transition";
         slot.appendChild(recBtn);
         recBtn.addEventListener("click", () => recapture(slot));
 
@@ -131,41 +129,43 @@ function recapture(slot) {
     const photoId = slot.dataset.photoId;
     const slotIndex = parseInt(slot.dataset.index) - 1;
 
-    if (!photoId) {
-        // Kosong → langsung capture
-        currentIndex = slotIndex;
-        ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
-        return;
-    }
-
-    if (!confirm("Apakah ingin capture ulang foto ini?")) return;
-
-    fetch("{{ route('photos.destroy', ':id') }}".replace(':id', photoId), {
-        method: "DELETE",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": "{{ csrf_token() }}"
-        },
-    })
-    .then(res => res.json())
-    .then(res => {
-        if (res.message) {
-            // kosongkan slot
-            slot.innerHTML = slot.dataset.index;
-            slot.dataset.filled = "";
-            slot.dataset.photoId = "";
+    startCountdown(() => {
+        if (!photoId) {
+            // Kosong → langsung capture
             currentIndex = slotIndex;
-
-            // tambahkan tombol recapture lagi
-            const recBtn = document.createElement('button');
-            recBtn.innerHTML = "🔄";
-            recBtn.className = "absolute top-1 right-1 bg-white/80 px-1 rounded text-sm hover:bg-white/100";
-            slot.appendChild(recBtn);
-            recBtn.addEventListener("click", () => recapture(slot));
-
-            // langsung capture ulang
             ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
+            return;
         }
+
+        if (!confirm("Apakah ingin capture ulang foto ini?")) return;
+
+        fetch("{{ route('photos.destroy', ':id') }}".replace(':id', photoId), {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.message) {
+                // kosongkan slot
+                slot.innerHTML = slot.dataset.index;
+                slot.dataset.filled = "";
+                slot.dataset.photoId = "";
+                currentIndex = slotIndex;
+
+                // tambahkan tombol recapture lagi
+                const recBtn = document.createElement('button');
+                recBtn.innerText = "Recapture";
+                recBtn.className = "absolute top-1 right-1 bg-white/90 px-2 py-1 rounded text-xs font-semibold hover:bg-white transition";
+                slot.appendChild(recBtn);
+                recBtn.addEventListener("click", () => recapture(slot));
+
+                // langsung capture ulang
+                ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
+            }
+        });
     });
 }
 
@@ -179,24 +179,24 @@ captureBtn.addEventListener("click", function() {
     startCountdown(() => ws.send(JSON.stringify({ action: "capture", order_code: orderCode })));
 });
 
+// -----------------------------
+// Countdown Function
+// -----------------------------
 function startCountdown(callback) {
     let counter = 3;
-    const showCountdown = () => {
-        countdownOverlay.textContent = counter;
-        countdownOverlay.classList.remove("opacity-0");
-        countdownOverlay.classList.add("opacity-100");
-        setTimeout(() => {
-            countdownOverlay.classList.remove("opacity-100");
-            countdownOverlay.classList.add("opacity-0");
-        }, 500);
-    };
-    showCountdown();
+    countdownOverlay.textContent = counter;
+    countdownOverlay.classList.remove("opacity-0");
+    countdownOverlay.classList.add("opacity-100");
+
     const interval = setInterval(() => {
         counter--;
-        if (counter > 0) showCountdown();
-        else {
+        if (counter > 0) {
+            countdownOverlay.textContent = counter;
+        } else {
             clearInterval(interval);
             countdownOverlay.textContent = "";
+            countdownOverlay.classList.remove("opacity-100");
+            countdownOverlay.classList.add("opacity-0");
             callback();
         }
     }, 1000);
