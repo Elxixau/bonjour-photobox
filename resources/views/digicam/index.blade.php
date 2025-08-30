@@ -5,26 +5,28 @@
     <h1 class="text-2xl font-bold mb-4 text-center">DigiCam Capture via WebSocket</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="relative">
-            <!-- Live Preview -->
-            <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
-            
-            <!-- Countdown Overlay (untuk live video saja) -->
-            <div id="countdownOverlay" 
-                 class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none rounded-lg">
+        <div class="">
+            <div class="relative">
+                <!-- Live Preview -->
+                <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
+                
+                <!-- Countdown Overlay (untuk live video saja) -->
+                <div id="countdownOverlay" 
+                    class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none rounded-lg">
+                </div>
+
             </div>
-
             <!-- Capture Button (Floating Icon) -->
-            <button id="captureBtn" 
-                    class="absolute bottom-4 right-1/2 transform translate-x-1/2 w-16 h-16 rounded-full border-4 border-blue-500 bg-white flex items-center justify-center shadow-lg hover:bg-blue-50 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h2l1-2h12l1 2h2v12H3V7z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 11a3 3 0 100 6 3 3 0 000-6z" />
-                </svg>
-            </button>
+                <button id="captureBtn" 
+                        class="absolute bottom-4 right-1/2 transform translate-x-1/2 w-16 h-16 rounded-full border-4 border-blue-500 bg-white flex items-center justify-center shadow-lg hover:bg-blue-50 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h2l1-2h12l1 2h2v12H3V7z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 11a3 3 0 100 6 3 3 0 000-6z" />
+                    </svg>
+                </button>
 
-            <p id="previewStatus" class="text-sm text-gray-500 mt-2 mt-24 text-center"></p>
-            <p id="status" class="mt-4 text-gray-700 text-center"></p>
+                <p id="previewStatus" class="text-sm text-gray-500 mt-2 mt-24 text-center hidden"></p>
+                <p id="status" class="mt-4 text-gray-700 text-center hidden"></p>
         </div>
 
         <!-- Preview Foto -->
