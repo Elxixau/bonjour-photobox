@@ -60,15 +60,14 @@ Route::get('/invoice/{order}', [PaymentController::class, 'invoice'])->name('pay
 Route::get('/sesi-foto/{orderCode}/{layout?}', [PageController::class, 'sesiFoto'])->name('sesi-foto.show');
 Route::post('/upload-photo', [PhotoController::class, 'uploadPhoto'])->name('upload.photo');
 Route::post('/photo/upload-all', [PhotoController::class, 'uploadAll'])->name('photo.upload.all');// web.php
-Route::post('/delete-single-photo', [PhotoController::class, 'deleteSinglePhoto'])->name('delete.single.photo');
-
-Route::post('/photo/delete-all', [PhotoController::class, 'deleteAll'])->name('delete.all.photos');
 Route::post('/upload-final/{orderCode}', [PhotoController::class, 'uploadFinal'])->name('upload.final');
 Route::get('/filter/{orderCode}', [AssetController::class, 'filter'])->name('filter.index');
 Route::post('/sticker/export/{orderCode}', [AssetController::class, 'export'])->name('sticker.export');
 Route::get('/order/{order_code}/qr-data', [PageController::class, 'getQrData'])->name('orders.qr-data');
 Route::get('/preview/{orderCode}', [PageController::class, 'preview'])->name('preview.show');
 
+// routes/web.php
+Route::delete('/photos/{id}', [PhotoController::class, 'destroy'])->name('photos.destroy');
 
 
 Route::prefix('gallery')->group(function () {

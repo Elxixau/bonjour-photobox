@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 class PhotoController extends Controller
 {
 
-public function show($orderCode)
+    public function show($orderCode)
     {
         // Cari order berdasarkan order_code
         $order = Order::where('order_code', $orderCode)->firstOrFail();
@@ -30,16 +30,29 @@ public function show($orderCode)
     }
 
     
-public function download($photo)
-{
-       // Ambil full path fisik file di storage
-    $filePath = Storage::disk('public')->path($photo);
+    public function download($photo)
+    {
+        // Ambil full path fisik file di storage
+        $filePath = Storage::disk('public')->path($photo);
 
-    if (!file_exists($filePath)) {
-        abort(404);
+        if (!file_exists($filePath)) {
+            abort(404);
+        }
+
+        return response()->download($filePath, basename($filePath));
     }
+    public function destroy($id)
+    {
+        $photo = Photo::findOrFail($id);
 
-    return response()->download($filePath, basename($filePath));
-}
+        // hapus file di storage
+        if ($photo->path && Storage::exists('public/' . $photo->path)) {
+            Storage::delete('public/' . $photo->path);
+        }
 
+        // hapus data di DB
+        $photo->delete();
+
+        return response()->json(['success' => true]);
+    }
 }
