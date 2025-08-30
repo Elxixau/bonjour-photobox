@@ -27,7 +27,7 @@
             >
                 {{-- Preview Mini Foto dengan filter --}}
                 <div class="w-20 h-20 mb-1 overflow-hidden rounded border border-gray-300">
-                    <img src="{{ asset('storage/' . $photos[0]->img_path) }}" 
+                    <img src="{{ asset('storage/' . $photos[0]->img_path ?? '') }}" 
                          class="w-full h-full object-cover"
                          style="filter: {{ $filter->css_filter }};">
                 </div>
@@ -92,21 +92,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         ctx.fillStyle="#ffffff";
         ctx.fillRect(0,0,canvas.width,canvas.height);
 
-        // --- Layer 1: Foto dengan filter
+        // --- Layer 1: Foto dengan filter (fit by height)
         slots.forEach((slot, index) => {
             if(photos[index]){
                 const img = photos[index];
-                const scale = slot.width / img.width;
-                const newWidth = slot.width;
-                const newHeight = img.height * scale;
-                const x = slot.x;
-                const y = slot.y + (slot.height - newHeight)/2;
+
+                // Fit by height
+                const scale = slot.height / img.height;
+                const newHeight = slot.height;
+                const newWidth = img.width * scale;
+
+                const x = slot.x + (slot.width - newWidth)/2; // center horizontal
+                const y = slot.y;
 
                 ctx.save();
                 ctx.beginPath();
                 ctx.rect(slot.x, slot.y, slot.width, slot.height);
                 ctx.clip();
-                
+
                 ctx.filter = currentFilter !== 'none' ? currentFilter : 'none';
                 ctx.drawImage(img, x, y, newWidth, newHeight);
                 ctx.restore();
