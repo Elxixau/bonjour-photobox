@@ -41,7 +41,7 @@ const layoutCount = 4;
 let currentIndex = 0;
 
 // -----------------------------
-// Generate Placeholder
+// Generate Placeholder + Recapture Button
 // -----------------------------
 const previewContainer = document.getElementById("previewContainer");
 for (let i = 1; i <= layoutCount; i++) {
@@ -49,6 +49,15 @@ for (let i = 1; i <= layoutCount; i++) {
     slot.className = "relative w-full h-40 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 font-bold";
     slot.textContent = i;
     slot.dataset.index = i;
+
+    // Tombol recapture
+    const recBtn = document.createElement('button');
+    recBtn.innerHTML = "🔄";
+    recBtn.className = "absolute top-1 right-1 bg-white/80 px-1 rounded text-sm hover:bg-white/100";
+    slot.appendChild(recBtn);
+
+    recBtn.addEventListener("click", () => recapture(slot));
+
     previewContainer.appendChild(slot);
 }
 
@@ -73,37 +82,35 @@ const ws = new WebSocket("ws://localhost:3000");
 
 ws.onopen = () => {
     document.getElementById("status").innerText = "Connected to server";
-    // auto-capture disabled
 };
+
 ws.onmessage = function(event) {
     try {
         const msg = JSON.parse(event.data);
-        if (msg.url) { // gunakan url asli
-            // cari slot sesuai currentIndex
+        if (msg.url) {
             const slot = previewContainer.children[currentIndex];
 
             // kosongkan slot
             slot.innerHTML = "";
 
-            // foto langsung
+            // tampilkan foto
             const imgEl = document.createElement('img');
             imgEl.src = msg.url + '?t=' + new Date().getTime();
             imgEl.className = "w-full h-full rounded-lg border border-gray-300 object-cover";
             slot.appendChild(imgEl);
 
-            // tombol recapture
-            if (msg.id) {
-                const recBtn = document.createElement('button');
-                recBtn.innerHTML = "🔄";
-                recBtn.className = "absolute top-1 right-1 bg-white/80 px-1 rounded text-sm hover:bg-white/100";
-                slot.appendChild(recBtn);
+            // simpan photoId
+            if (msg.id) slot.dataset.photoId = msg.id;
 
-                recBtn.addEventListener("click", () => recapture(slot, msg.id));
-            }
+            // tombol recapture tetap
+            const recBtn = document.createElement('button');
+            recBtn.innerHTML = "🔄";
+            recBtn.className = "absolute top-1 right-1 bg-white/80 px-1 rounded text-sm hover:bg-white/100";
+            slot.appendChild(recBtn);
+            recBtn.addEventListener("click", () => recapture(slot));
 
             slot.dataset.filled = "true";
 
-            // naikkan currentIndex setelah slot diisi
             if (currentIndex < layoutCount - 1) currentIndex++;
         } else {
             document.getElementById("status").innerText = msg.message || event.data;
@@ -114,16 +121,24 @@ ws.onmessage = function(event) {
     }
 };
 
-
-
 ws.onclose = () => {
     document.getElementById("status").innerText = "Disconnected from server";
 };
 
 // -----------------------------
-// Recapture
+// Recapture Function
 // -----------------------------
-function recapture(slot, photoId) {
+function recapture(slot) {
+    const photoId = slot.dataset.photoId;
+    const slotIndex = parseInt(slot.dataset.index) - 1;
+
+    if (!photoId) {
+        // Kosong → langsung capture
+        currentIndex = slotIndex;
+        ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
+        return;
+    }
+
     if (!confirm("Apakah ingin capture ulang foto ini?")) return;
 
     fetch("{{ route('photos.destroy', ':id') }}".replace(':id', photoId), {
@@ -139,9 +154,17 @@ function recapture(slot, photoId) {
             // kosongkan slot
             slot.innerHTML = slot.dataset.index;
             slot.dataset.filled = "";
-            currentIndex = parseInt(slot.dataset.index) - 1;
+            slot.dataset.photoId = "";
+            currentIndex = slotIndex;
 
-            // capture ulang slot ini
+            // tambahkan tombol recapture lagi
+            const recBtn = document.createElement('button');
+            recBtn.innerHTML = "🔄";
+            recBtn.className = "absolute top-1 right-1 bg-white/80 px-1 rounded text-sm hover:bg-white/100";
+            slot.appendChild(recBtn);
+            recBtn.addEventListener("click", () => recapture(slot));
+
+            // langsung capture ulang
             ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
         }
     });
