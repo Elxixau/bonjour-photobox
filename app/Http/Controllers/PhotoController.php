@@ -57,36 +57,39 @@ class PhotoController extends Controller
     }
   public function upload(Request $request)
     { $request->validate([
-            'order_id' => 'required|exists:orders,id',
-            'image' => 'required|string',
+            'order_id' => 'required|string',
+            'image' => 'required|string', // base64
         ]);
 
-        $order = Order::find($request->order_id);
+        $orderId = $request->order_id;
 
-        // Extract base64 image
-        $imageData = $request->image;
-        if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $type)) {
-            $imageData = substr($imageData, strpos($imageData, ',') + 1);
-            $type = strtolower($type[1]); // jpg, png, etc
-            $imageData = base64_decode($imageData);
-        } else {
-            return response()->json(['success' => false, 'message' => 'Invalid image data'], 400);
-        }
+        // folder di storage/public/ORD-{order_id}
+        $orderFolder = 'ORD-' . $orderId;
 
-        $folder = "photos/ORD-{$order->order_code}";
-        Storage::makeDirectory($folder);
+        // decode base64
+        $image = preg_replace('/^data:image\/\w+;base64,/', '', $request->image);
+        $image = str_replace(' ', '+', $image);
+        $imageData = base64_decode($image);
 
-        $filename = uniqid() . ".jpeg";
-        $path = "$folder/$filename";
+        $filename = uniqid() . '.jpeg';
+        $path = "{$orderFolder}/{$filename}";
 
-        Storage::put($path, $imageData);
+        // simpan file
+        Storage::disk('public')->put($path, $imageData);
 
-        // Simpan path ke DB jika perlu (misal order punya relasi photos)
-        // $order->photos()->create(['path' => $path]);
+        // simpan ke database
+        $gallery = CloudGallery::create([
+            'order_id' => $orderId,
+            'img_path' => $path,
+        ]);
 
-        $url = Storage::url($path);
+        $url = Storage::url($path); // /storage/ORD-{order_id}/filename.jpeg
 
-        return response()->json(['success' => true, 'url' => $url]);
+        return response()->json([
+            'success' => true,
+            'url' => $url,
+            'gallery_id' => $gallery->id
+        ]);
     }
 
     /**

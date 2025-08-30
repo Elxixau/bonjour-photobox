@@ -443,5 +443,3 @@ async function startAutoCaptureWithReminder() {
 })();
 </script>
 @endsection
-
-apakah pencahayaan mempengaruhi kualitas gambar
