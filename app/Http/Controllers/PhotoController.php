@@ -55,53 +55,45 @@ class PhotoController extends Controller
 
         return response()->json(['success' => true]);
     }
-
-     public function upload(Request $request)
+  public function upload(Request $request)
     {
- 
-    $request->validate([
-        'order_code' => 'required|string',
-        'image' => 'required|string', // base64 dari JS
-    ]);
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'image' => 'required|string'
+        ]);
 
-    $orderCode = $request->order_code;
-    $imageData = $request->image;
+        $order = Order::findOrFail($request->order_id);
+        $orderCode = $order->order_code;
 
-    $order = Order::where('order_code', $orderCode)->first();
-    if (!$order) {
-        return response()->json(['success'=>false,'message'=>'Order tidak ditemukan'],404);
-    }
-
-    // Extract base64
-    if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $type)) {
-        $imageData = substr($imageData, strpos($imageData, ',') + 1);
-        $type = strtolower($type[1]); // jpg/png
-        if (!in_array($type, ['jpg','jpeg','png'])) {
-            return response()->json(['success'=>false,'message'=>'Format image tidak didukung']);
+        // buat folder jika belum ada
+        $folder = "public/photos/{$orderCode}";
+        if (!Storage::exists($folder)) {
+            Storage::makeDirectory($folder);
         }
-    } else {
-        return response()->json(['success'=>false,'message'=>'Data image tidak valid']);
-    }
 
-    $imageData = base64_decode($imageData);
-    if ($imageData === false) {
-        return response()->json(['success'=>false,'message'=>'Base64 decode error']);
-    }
+        // ambil base64
+        $image = $request->image;
+        if (preg_match('/^data:image\/(\w+);base64,/', $image, $type)) {
+            $image = substr($image, strpos($image, ',') + 1);
+            $type = strtolower($type[1]); // jpg, png, etc
+            $image = base64_decode($image);
+            if ($image === false) {
+                return response()->json(['success' => false, 'message' => 'Base64 decode error']);
+            }
+        } else {
+            return response()->json(['success' => false, 'message' => 'Invalid base64 image']);
+        }
 
-    $fileName = time().'_'.Str::random(8).'.'.$type;
-    $folder = "public/{$orderCode}";
-    Storage::put("{$folder}/{$fileName}", $imageData);
+        $fileName = uniqid() . '.' . $type;
+        $filePath = "{$folder}/{$fileName}";
+        Storage::put($filePath, $image);
 
-    $gallery = CloudGallery::create([
-        'order_id' => $order->id,
-        'img_path' => "{$orderCode}/{$fileName}"
-    ]);
+        $url = Storage::url("photos/{$orderCode}/{$fileName}");
 
-    return response()->json([
-        'success' => true,
-        'url' => Storage::url("{$orderCode}/{$fileName}"), // /storage/{order_code}/{file}
-        'photo_id' => $gallery->id,
-    ]);
+        return response()->json([
+            'success' => true,
+            'url' => $url
+        ]);
     }
 
     /**
