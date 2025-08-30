@@ -56,44 +56,37 @@ class PhotoController extends Controller
         return response()->json(['success' => true]);
     }
   public function upload(Request $request)
-    {
-        $request->validate([
+    { $request->validate([
             'order_id' => 'required|exists:orders,id',
-            'image' => 'required|string'
+            'image' => 'required|string',
         ]);
 
-        $order = Order::findOrFail($request->order_id);
-        $orderCode = $order->order_code;
+        $order = Order::find($request->order_id);
 
-        // buat folder jika belum ada
-        $folder = "public/photos/{$orderCode}";
-        if (!Storage::exists($folder)) {
-            Storage::makeDirectory($folder);
-        }
-
-        // ambil base64
-        $image = $request->image;
-        if (preg_match('/^data:image\/(\w+);base64,/', $image, $type)) {
-            $image = substr($image, strpos($image, ',') + 1);
+        // Extract base64 image
+        $imageData = $request->image;
+        if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $type)) {
+            $imageData = substr($imageData, strpos($imageData, ',') + 1);
             $type = strtolower($type[1]); // jpg, png, etc
-            $image = base64_decode($image);
-            if ($image === false) {
-                return response()->json(['success' => false, 'message' => 'Base64 decode error']);
-            }
+            $imageData = base64_decode($imageData);
         } else {
-            return response()->json(['success' => false, 'message' => 'Invalid base64 image']);
+            return response()->json(['success' => false, 'message' => 'Invalid image data'], 400);
         }
 
-        $fileName = uniqid() . '.' . $type;
-        $filePath = "{$folder}/{$fileName}";
-        Storage::put($filePath, $image);
+        $folder = "photos/ORD-{$order->order_code}";
+        Storage::makeDirectory($folder);
 
-        $url = Storage::url("photos/{$orderCode}/{$fileName}");
+        $filename = uniqid() . ".jpeg";
+        $path = "$folder/$filename";
 
-        return response()->json([
-            'success' => true,
-            'url' => $url
-        ]);
+        Storage::put($path, $imageData);
+
+        // Simpan path ke DB jika perlu (misal order punya relasi photos)
+        // $order->photos()->create(['path' => $path]);
+
+        $url = Storage::url($path);
+
+        return response()->json(['success' => true, 'url' => $url]);
     }
 
     /**
