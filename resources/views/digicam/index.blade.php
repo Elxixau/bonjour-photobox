@@ -5,20 +5,26 @@
     <h1 class="text-2xl font-bold mb-4 text-center">DigiCam Capture via WebSocket</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
+        <div class="relative">
             <!-- Live Preview -->
-            <div class="relative w-full">
-                <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
-                <div id="countdownOverlay" 
-                    class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none">
-                </div>
+            <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
+            
+            <!-- Countdown Overlay -->
+            <div id="countdownOverlay" 
+                 class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none">
             </div>
-            <p id="previewStatus" class="text-sm text-gray-500 mt-2"></p>
 
-            <div class="mt-4 text-center">
-                <button id="captureBtn" class="px-6 py-3 bg-blue-500 text-white rounded-lg">Capture</button>
-                <p id="status" class="mt-4 text-gray-700"></p>
-            </div>
+            <!-- Capture Button (Floating Icon) -->
+            <button id="captureBtn" 
+                    class="absolute bottom-4 right-1/2 transform translate-x-1/2 w-16 h-16 rounded-full border-4 border-blue-500 bg-white flex items-center justify-center shadow-lg hover:bg-blue-50 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h2l1-2h12l1 2h2v12H3V7z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 11a3 3 0 100 6 3 3 0 000-6z" />
+                </svg>
+            </button>
+
+            <p id="previewStatus" class="text-sm text-gray-500 mt-2 mt-24 text-center"></p>
+            <p id="status" class="mt-4 text-gray-700 text-center"></p>
         </div>
 
         <!-- Preview Foto -->
@@ -33,7 +39,6 @@
 const orderCode = '{{ $order->order_code }}';
 const layoutCount = 4;
 let currentIndex = 0;
-const captureInterval = 3000;
 
 // -----------------------------
 // Generate Placeholder
@@ -68,7 +73,7 @@ const ws = new WebSocket("ws://localhost:3000");
 
 ws.onopen = () => {
     document.getElementById("status").innerText = "Connected to server";
-    startAutoCapture();
+    // auto-capture disabled
 };
 
 ws.onmessage = function(event) {
@@ -84,7 +89,7 @@ ws.onmessage = function(event) {
             imgEl.className = "w-full h-full rounded-lg border border-gray-300 object-cover";
             slot.appendChild(imgEl);
 
-            // Tombol Recapture pojok kanan atas
+            // Recapture button pojok kanan atas
             const recBtn = document.createElement('button');
             recBtn.innerHTML = "🔄";
             recBtn.className = "absolute top-1 right-1 bg-white/80 px-1 rounded text-sm hover:bg-white/100";
@@ -106,19 +111,6 @@ ws.onmessage = function(event) {
 ws.onclose = () => {
     document.getElementById("status").innerText = "Disconnected from server";
 };
-
-// -----------------------------
-// Auto Capture sesuai layoutCount
-// -----------------------------
-function startAutoCapture() {
-    const interval = setInterval(() => {
-        if (currentIndex < layoutCount) {
-            ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
-        } else {
-            clearInterval(interval);
-        }
-    }, captureInterval);
-}
 
 // -----------------------------
 // Recapture
@@ -147,9 +139,8 @@ function recapture(slot, photoId) {
     });
 }
 
-
 // -----------------------------
-// Tombol Capture manual
+// Tombol Capture Manual
 // -----------------------------
 const captureBtn = document.getElementById("captureBtn");
 const countdownOverlay = document.getElementById("countdownOverlay");
