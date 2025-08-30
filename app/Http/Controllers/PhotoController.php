@@ -61,7 +61,7 @@ class PhotoController extends Controller
             'image' => 'required|string', // base64
         ]);
 
-        $orderId = $request->order_id;
+        $orderId = $request->order_code;
 
         // folder di storage/public/ORD-{order_id}
         $orderFolder = 'ORD-' . $orderId;
