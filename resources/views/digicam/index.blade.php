@@ -83,41 +83,40 @@ const ws = new WebSocket("ws://localhost:3000");
 ws.onopen = () => {
     document.getElementById("status").innerText = "Connected to server";
 };
-
 ws.onmessage = function(event) {
+    let msg;
     try {
-        const msg = JSON.parse(event.data);
-        if (msg.url) {
-            const slot = previewContainer.children[currentIndex];
-
-            // kosongkan slot
-            slot.innerHTML = "";
-
-            // tampilkan foto
-            const imgEl = document.createElement('img');
-            imgEl.src = msg.url + '?t=' + new Date().getTime();
-            imgEl.className = "w-full h-full rounded-lg border border-gray-300 object-cover";
-            slot.appendChild(imgEl);
-
-            // simpan photoId
-            if (msg.id) slot.dataset.photoId = msg.id;
-
-            // tombol recapture tetap
-            const recBtn = document.createElement('button');
-            recBtn.innerHTML = "🔄";
-            recBtn.className = "absolute top-1 right-1 bg-white/80 px-1 rounded text-sm hover:bg-white/100";
-            slot.appendChild(recBtn);
-            recBtn.addEventListener("click", () => recapture(slot));
-
-            slot.dataset.filled = "true";
-
-            if (currentIndex < layoutCount - 1) currentIndex++;
-        } else {
-            document.getElementById("status").innerText = msg.message || event.data;
-        }
+        msg = JSON.parse(event.data); // coba parse
     } catch (e) {
-        console.error(e);
-        document.getElementById("status").innerText = "Error parsing message";
+        // Bukan JSON, tampilkan apa adanya
+        document.getElementById("status").innerText = event.data;
+        console.log("Plain text message:", event.data);
+        return; // hentikan eksekusi JSON logic
+    }
+
+    // lanjutkan jika msg adalah JSON
+    if (msg.url) {
+        const slot = previewContainer.children[currentIndex];
+        slot.innerHTML = "";
+
+        const imgEl = document.createElement('img');
+        imgEl.src = msg.url + '?t=' + new Date().getTime();
+        imgEl.className = "w-full h-full rounded-lg border border-gray-300 object-cover";
+        slot.appendChild(imgEl);
+
+        if (msg.id) slot.dataset.photoId = msg.id;
+
+        // Tombol recapture tetap
+        const recBtn = document.createElement('button');
+        recBtn.innerHTML = "🔄";
+        recBtn.className = "absolute top-1 right-1 bg-white/80 px-1 rounded text-sm hover:bg-white/100";
+        slot.appendChild(recBtn);
+        recBtn.addEventListener("click", () => recapture(slot));
+
+        slot.dataset.filled = "true";
+        if (currentIndex < layoutCount - 1) currentIndex++;
+    } else if (msg.message) {
+        document.getElementById("status").innerText = msg.message;
     }
 };
 
