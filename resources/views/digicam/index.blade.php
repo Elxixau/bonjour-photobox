@@ -78,34 +78,42 @@ ws.onopen = () => {
 ws.onmessage = function(event) {
     try {
         const msg = JSON.parse(event.data);
-        if (msg.url && msg.id) { // gunakan url asli
+        if (msg.url) { // gunakan url asli
+            // cari slot sesuai currentIndex
             const slot = previewContainer.children[currentIndex];
+
+            // kosongkan slot
             slot.innerHTML = "";
 
-            // Foto asli langsung
+            // foto langsung
             const imgEl = document.createElement('img');
             imgEl.src = msg.url + '?t=' + new Date().getTime();
             imgEl.className = "w-full h-full rounded-lg border border-gray-300 object-cover";
             slot.appendChild(imgEl);
 
-            // Tombol recapture pojok kanan atas
-            const recBtn = document.createElement('button');
-            recBtn.innerHTML = "🔄";
-            recBtn.className = "absolute top-1 right-1 bg-white/80 px-1 rounded text-sm hover:bg-white/100";
-            slot.appendChild(recBtn);
+            // tombol recapture
+            if (msg.id) {
+                const recBtn = document.createElement('button');
+                recBtn.innerHTML = "🔄";
+                recBtn.className = "absolute top-1 right-1 bg-white/80 px-1 rounded text-sm hover:bg-white/100";
+                slot.appendChild(recBtn);
+
+                recBtn.addEventListener("click", () => recapture(slot, msg.id));
+            }
 
             slot.dataset.filled = "true";
 
-            recBtn.addEventListener("click", () => recapture(slot, msg.id));
-
-            currentIndex++;
+            // naikkan currentIndex setelah slot diisi
+            if (currentIndex < layoutCount - 1) currentIndex++;
         } else {
             document.getElementById("status").innerText = msg.message || event.data;
         }
-    } catch {
-        document.getElementById("status").innerText = event.data;
+    } catch (e) {
+        console.error(e);
+        document.getElementById("status").innerText = "Error parsing message";
     }
 };
+
 
 
 ws.onclose = () => {
