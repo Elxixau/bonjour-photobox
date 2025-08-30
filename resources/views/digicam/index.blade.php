@@ -126,27 +126,27 @@ function startAutoCapture() {
 function recapture(slot, photoId) {
     if (!confirm("Apakah ingin capture ulang foto ini?")) return;
 
-    fetch("{{ route('photos.destroy') }}", {
+    fetch("{{ route('photos.destroy', ':id') }}".replace(':id', photoId), {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json",
             "X-CSRF-TOKEN": "{{ csrf_token() }}"
         },
-        body: JSON.stringify({ id: photoId })
     })
     .then(res => res.json())
     .then(res => {
         if (res.message) {
-            // Kosongkan slot
+            // kosongkan slot
             slot.innerHTML = slot.dataset.index;
             slot.dataset.filled = "";
             currentIndex = parseInt(slot.dataset.index) - 1;
 
-            // Capture ulang slot ini
+            // capture ulang slot ini
             ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
         }
     });
 }
+
 
 // -----------------------------
 // Tombol Capture manual
