@@ -12,7 +12,7 @@
                 <!--  <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
                  -->
                
-                <p id="poseText" class="absolute text-white p-2 text-xl font-bold">
+                <p id="poseText" class="absolute text-white p-2 text-lg font-bold">
                     Berpose dan menghadap ke kamera
                 </p>
 
