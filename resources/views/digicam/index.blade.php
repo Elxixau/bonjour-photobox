@@ -9,10 +9,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="">
             <div class="relative w-full h-64 bg-black/80 rounded-lg flex items-center justify-center">
-                <!-- 
+                <!-- Video Live Preview -->
                 <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
-                -->
-                
                 
                 <p id="poseText" class="absolute text-white p-2 text-xl font-bold">
                     Berpose dan menghadap ke kamera
@@ -42,12 +40,18 @@
             <div id="previewContainer" class="grid grid-cols-2 gap-4 relative"></div>
         </div>
     </div>
+
+    <!-- Tombol Next -->
+    <div class="mt-8 flex justify-center">
+         <button id="nextBtn" class="px-6 py-3  bg-white text-black font-semibold py-2 px-4 rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Selanjutnya</button>
+    </div>
 </div>
 
 <script>
 const orderCode = '{{ $order->order_code }}';
 const layoutCount = {{ $layout }};
 let currentIndex = 0;
+let capturedImages = []; // untuk tracking
 
 // -----------------------------
 // Generate Placeholder + Recapture Button
@@ -59,12 +63,10 @@ for (let i = 1; i <= layoutCount; i++) {
     slot.textContent = i;
     slot.dataset.index = i;
 
-    // Tombol recapture (default kosong)
     const recBtn = document.createElement('button');
     recBtn.innerText = "Recapture";
     recBtn.className = "absolute top-1 right-1 bg-white/90 px-2 py-1 rounded text-xs font-semibold hover:bg-white transition";
     slot.appendChild(recBtn);
-
     recBtn.addEventListener("click", () => recapture(slot));
 
     previewContainer.appendChild(slot);
@@ -89,15 +91,11 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: false })
 // -----------------------------
 const ws = new WebSocket("ws://localhost:3000");
 
-ws.onopen = () => {
-    document.getElementById("status").innerText = "Connected to server";
-};
 ws.onmessage = function(event) {
     let msg;
     try {
         msg = JSON.parse(event.data);
     } catch (e) {
-        document.getElementById("status").innerText = event.data;
         return;
     }
 
@@ -112,7 +110,6 @@ ws.onmessage = function(event) {
 
         if (msg.id) slot.dataset.photoId = msg.id;
 
-        // tombol recapture
         const recBtn = document.createElement('button');
         recBtn.innerText = "Recapture";
         recBtn.className = "absolute top-1 right-1 bg-white/90 px-2 py-1 rounded text-xs font-semibold hover:bg-white transition";
@@ -121,18 +118,15 @@ ws.onmessage = function(event) {
 
         slot.dataset.filled = "true";
 
-        // update counter judul
+        // update counter
         document.getElementById("fotoCounter").innerText = 
             document.querySelectorAll("#previewContainer [data-filled='true']").length;
 
-        if (currentIndex < layoutCount - 1) currentIndex++;
-    } else if (msg.message) {
-        document.getElementById("status").innerText = msg.message;
-    }
-};
+        // tandai captured
+        capturedImages[currentIndex] = true;
 
-ws.onclose = () => {
-    document.getElementById("status").innerText = "Disconnected from server";
+        if (currentIndex < layoutCount - 1) currentIndex++;
+    }
 };
 
 // -----------------------------
@@ -142,53 +136,45 @@ function recapture(slot) {
     const photoId = slot.dataset.photoId;
     const slotIndex = parseInt(slot.dataset.index) - 1;
 
-    if (slotIndex >= layoutCount) {
-        alert("Slot ini tidak tersedia untuk layout " + layoutCount);
+    if (!photoId) {
+        currentIndex = slotIndex;
+        ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
         return;
     }
 
-    startCountdown(() => {
-        if (!photoId) {
+    if (!confirm("Apakah ingin capture ulang foto ini?")) return;
+
+    fetch("{{ route('photos.destroy', ':id') }}".replace(':id', photoId), {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+        },
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.message) {
+            slot.innerHTML = slot.dataset.index;
+            slot.dataset.filled = "";
+            slot.dataset.photoId = "";
             currentIndex = slotIndex;
+            capturedImages[slotIndex] = false;
+
+            const recBtn = document.createElement('button');
+            recBtn.innerText = "Recapture";
+            recBtn.className = "absolute top-1 right-1 bg-white/90 px-2 py-1 rounded text-xs font-semibold hover:bg-white transition";
+            slot.appendChild(recBtn);
+            recBtn.addEventListener("click", () => recapture(slot));
+
             ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
-            return;
         }
-
-        if (!confirm("Apakah ingin capture ulang foto ini?")) return;
-
-        fetch("{{ route('photos.destroy', ':id') }}".replace(':id', photoId), {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
-        })
-        .then(res => res.json())
-        .then(res => {
-            if (res.message) {
-                slot.innerHTML = slot.dataset.index;
-                slot.dataset.filled = "";
-                slot.dataset.photoId = "";
-                currentIndex = slotIndex;
-
-                const recBtn = document.createElement('button');
-                recBtn.innerText = "Recapture";
-                recBtn.className = "absolute top-1 right-1 bg-white/90 px-2 py-1 rounded text-xs font-semibold hover:bg-white transition";
-                slot.appendChild(recBtn);
-                recBtn.addEventListener("click", () => recapture(slot));
-
-                ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
-            }
-        });
     });
 }
 
 // -----------------------------
-// Tombol Capture Manual
+// Tombol Capture
 // -----------------------------
-const captureBtn = document.getElementById("captureBtn");
-
-captureBtn.addEventListener("click", function() {
+document.getElementById("captureBtn").addEventListener("click", function() {
     if (currentIndex >= layoutCount) {
         alert("Foto sudah mencapai batas maksimal (" + layoutCount + ")");
         return;
@@ -197,11 +183,10 @@ captureBtn.addEventListener("click", function() {
 });
 
 // -----------------------------
-// Countdown Function
+// Countdown
 // -----------------------------
 function startCountdown(callback) {
     let counter = 3;
-
     const poseText = document.getElementById("poseText");
     const countdownOverlay = document.getElementById("countdownOverlay");
 
@@ -216,15 +201,25 @@ function startCountdown(callback) {
             countdownOverlay.textContent = counter;
         } else {
             clearInterval(interval);
-
             countdownOverlay.textContent = "";
             countdownOverlay.classList.remove("opacity-100");
             countdownOverlay.classList.add("opacity-0");
             poseText.classList.remove("hidden");
-
             callback();
         }
     }, 1000);
 }
+
+// -----------------------------
+// Tombol Next
+// -----------------------------
+const nextBtn = document.getElementById("nextBtn");
+nextBtn.addEventListener('click', ()=>{
+    if(!capturedImages.some(i => i)){
+        alert("Belum ada foto yang diambil!");
+        return;
+    }
+    window.location.href = `/filter/${orderCode}`;
+});
 </script>
 @endsection
