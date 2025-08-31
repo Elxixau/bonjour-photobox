@@ -7,14 +7,20 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="">
             <div class="relative">
-                <!-- Live Preview -->
-                <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
+                <!--
+                    <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
+                -->
                 
+                <!-- Overlay Placeholder -->
+                <div id="poseOverlay" 
+                    class="absolute inset-0 flex items-center justify-center text-white text-2xl font-bold bg-black/70 opacity-0 transition-opacity duration-500 rounded-lg pointer-events-none">
+                    Berpose dan menghadap ke kamera
+                </div>
+
                 <!-- Countdown Overlay -->
                 <div id="countdownOverlay" 
                     class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none rounded-lg">
                 </div>
-
             </div>
             <!-- Capture Button -->
                 <button id="captureBtn" 
