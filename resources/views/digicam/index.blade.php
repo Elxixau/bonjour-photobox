@@ -1,16 +1,29 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $totalWaktu = isset($order->waktu) ? intval($order->waktu) * 60 : 300; // detik
+@endphp
+
 <div class="container mx-auto p-4">
     <h1 class="text-2xl text-white font-bold mb-4 text-center">
         Foto <span id="fotoCounter">0</span>/{{ $layout }}
     </h1>
 
+    <!-- Global Timer -->
+    <div class="absolute top-4 right-4 z-50 flex gap-2">
+        <div class="pointer-events-none relative rounded-lg border-2 border-black bg-white px-3 py-1 shadow-black shadow-[4px_4px_0_0] flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
+            </svg>
+            <span id="globalTimer" class="text-lg font-extrabold text-gray-600 select-none">--:--</span>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="">
             <div class="relative w-full h-64 bg-black/80 rounded-lg flex items-center justify-center">
-                <!--  <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
-                 -->
+                <!-- <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video> -->
                
                 <p id="poseText" class="absolute text-white p-2 text-lg font-bold">
                     Berpose dan menghadap ke kamera
@@ -43,7 +56,7 @@
 
     <!-- Tombol Next -->
     <div class="mt-8 flex justify-center">
-         <button id="nextBtn" class="px-6 py-3  bg-white text-black font-semibold py-2 px-4 rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Selanjutnya</button>
+         <button id="nextBtn" class="px-6 py-3 bg-white text-black font-semibold py-2 px-4 rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300 hidden">Selanjutnya</button>
     </div>
 </div>
 
@@ -51,7 +64,45 @@
 const orderCode = '{{ $order->order_code }}';
 const layoutCount = {{ $layout }};
 let currentIndex = 0;
-let capturedImages = []; // untuk tracking
+let capturedImages = [];
+let isTimeUp = false; // flag waktu habis
+
+// -----------------------------
+// Global Timer
+// -----------------------------
+let totalWaktu = {{ $totalWaktu }};
+const globalTimerEl = document.getElementById("globalTimer");
+let globalTimerInterval;
+
+function formatTime(seconds) {
+    let m = Math.floor(seconds / 60);
+    let s = seconds % 60;
+    return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+}
+
+function startGlobalTimer() {
+    function updateGlobalTimer() {
+        globalTimerEl.textContent = formatTime(totalWaktu);
+        if (totalWaktu <= 0) {
+            clearInterval(globalTimerInterval);
+            globalTimerEl.textContent = "00:00";
+            waktuHabis();
+        }
+        totalWaktu--;
+    }
+    updateGlobalTimer();
+    globalTimerInterval = setInterval(updateGlobalTimer, 1000);
+}
+
+function waktuHabis(){
+    isTimeUp = true;
+    // disable capture button
+    document.getElementById("captureBtn").disabled = true;
+    document.getElementById("captureBtn").classList.add("opacity-50","cursor-not-allowed");
+    // tampilkan tombol next
+    nextBtn.classList.remove("hidden");
+    alert("Waktu habis! Silakan lanjut ke tahap berikutnya.");
+}
 
 // -----------------------------
 // Generate Placeholder + Recapture Button
@@ -67,37 +118,24 @@ for (let i = 1; i <= layoutCount; i++) {
     recBtn.innerText = "Recapture";
     recBtn.className = "absolute top-1 right-1 bg-white/90 px-2 py-1 rounded text-xs font-semibold hover:bg-white transition";
     slot.appendChild(recBtn);
-    recBtn.addEventListener("click", () => recapture(slot));
+    recBtn.addEventListener("click", () => {
+        if(isTimeUp){
+            alert("Waktu sudah habis, tidak bisa recapture lagi.");
+            return;
+        }
+        recapture(slot);
+    });
 
     previewContainer.appendChild(slot);
 }
 
 // -----------------------------
-// Live Preview
-// -----------------------------
-const videoEl = document.getElementById("liveVideo");
-navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-    .then(stream => {
-        videoEl.srcObject = stream;
-        document.getElementById("previewStatus").innerText = "Live preview aktif";
-    })
-    .catch(err => {
-        console.error("Cannot access camera:", err);
-        document.getElementById("previewStatus").innerText = "Tidak bisa akses kamera";
-    });
-
-// -----------------------------
 // WebSocket
 // -----------------------------
 const ws = new WebSocket("ws://localhost:3000");
-
 ws.onmessage = function(event) {
     let msg;
-    try {
-        msg = JSON.parse(event.data);
-    } catch (e) {
-        return;
-    }
+    try { msg = JSON.parse(event.data); } catch (e) { return; }
 
     if (msg.url) {
         const slot = previewContainer.children[currentIndex];
@@ -114,7 +152,13 @@ ws.onmessage = function(event) {
         recBtn.innerText = "Recapture";
         recBtn.className = "absolute top-1 right-1 bg-white/90 px-2 py-1 rounded text-xs font-semibold hover:bg-white transition";
         slot.appendChild(recBtn);
-        recBtn.addEventListener("click", () => recapture(slot));
+        recBtn.addEventListener("click", () => {
+            if(isTimeUp){
+                alert("Waktu sudah habis, tidak bisa recapture lagi.");
+                return;
+            }
+            recapture(slot);
+        });
 
         slot.dataset.filled = "true";
 
@@ -122,7 +166,6 @@ ws.onmessage = function(event) {
         document.getElementById("fotoCounter").innerText = 
             document.querySelectorAll("#previewContainer [data-filled='true']").length;
 
-        // tandai captured
         capturedImages[currentIndex] = true;
 
         if (currentIndex < layoutCount - 1) currentIndex++;
@@ -164,7 +207,13 @@ function recapture(slot) {
             recBtn.innerText = "Recapture";
             recBtn.className = "absolute top-1 right-1 bg-white/90 px-2 py-1 rounded text-xs font-semibold hover:bg-white transition";
             slot.appendChild(recBtn);
-            recBtn.addEventListener("click", () => recapture(slot));
+            recBtn.addEventListener("click", () => {
+                if(isTimeUp){
+                    alert("Waktu sudah habis, tidak bisa recapture lagi.");
+                    return;
+                }
+                recapture(slot);
+            });
 
             ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
         }
@@ -175,6 +224,10 @@ function recapture(slot) {
 // Tombol Capture
 // -----------------------------
 document.getElementById("captureBtn").addEventListener("click", function() {
+    if(isTimeUp){
+        alert("Waktu sudah habis, tidak bisa mengambil foto lagi.");
+        return;
+    }
     if (currentIndex >= layoutCount) {
         alert("Foto sudah mencapai batas maksimal (" + layoutCount + ")");
         return;
@@ -221,5 +274,8 @@ nextBtn.addEventListener('click', ()=>{
     }
     window.location.href = `/filter/${orderCode}`;
 });
+
+// mulai timer
+startGlobalTimer();
 </script>
 @endsection
