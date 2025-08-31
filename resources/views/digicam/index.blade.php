@@ -11,15 +11,13 @@
                     <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
                 -->
                 
-                <!-- Overlay Placeholder -->
-                <div id="poseOverlay" 
-                    class="absolute inset-0 flex items-center justify-center text-white text-2xl font-bold bg-black/70 opacity-0 transition-opacity duration-500 rounded-lg pointer-events-none">
+                <p id="poseText" class="text-white text-xl font-bold">
                     Berpose dan menghadap ke kamera
-                </div>
+                </p>
 
                 <!-- Countdown Overlay -->
                 <div id="countdownOverlay" 
-                    class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none rounded-lg">
+                    class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/60 opacity-0 transition-opacity duration-500 rounded-lg">
                 </div>
             </div>
             <!-- Capture Button -->
@@ -191,6 +189,12 @@ captureBtn.addEventListener("click", function() {
 // -----------------------------
 function startCountdown(callback) {
     let counter = 3;
+
+    const poseText = document.getElementById("poseText");
+    const countdownOverlay = document.getElementById("countdownOverlay");
+
+    // Sembunyikan teks pose, tampilkan countdown
+    poseText.classList.add("hidden");
     countdownOverlay.textContent = counter;
     countdownOverlay.classList.remove("opacity-0");
     countdownOverlay.classList.add("opacity-100");
@@ -201,12 +205,17 @@ function startCountdown(callback) {
             countdownOverlay.textContent = counter;
         } else {
             clearInterval(interval);
+
+            // Sembunyikan countdown, tampilkan teks lagi
             countdownOverlay.textContent = "";
             countdownOverlay.classList.remove("opacity-100");
             countdownOverlay.classList.add("opacity-0");
+            poseText.classList.remove("hidden");
+
             callback();
         }
     }, 1000);
 }
+
 </script>
 @endsection
