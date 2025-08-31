@@ -2,16 +2,17 @@
 
 @section('content')
 <div class="container mx-auto p-4">
-    <h1 class="text-2xl text-white font-bold mb-4 text-center">Sesi Foto</h1>
+    <h1 class="text-2xl text-white font-bold mb-4 text-center">
+        Foto <span id="fotoCounter">0</span>/{{ $layout }}
+    </h1>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="">
             <div class="relative w-full h-64 bg-black/80 rounded-lg flex items-center justify-center">
-                <!--
-                    <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
-                -->
+                <!-- Video Live Preview -->
+                <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
                 
-                <p id="poseText" class="text-white text-xl font-bold">
+                <p id="poseText" class="absolute text-white p-2 text-xl font-bold">
                     Berpose dan menghadap ke kamera
                 </p>
 
@@ -20,17 +21,18 @@
                     class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/60 opacity-0 transition-opacity duration-500 rounded-lg">
                 </div>
             </div>
-            <!-- Capture Button -->
-                <button id="captureBtn" 
-                        class="absolute bottom-4 right-1/2 transform translate-x-1/2 w-16 h-16 rounded-full border-4 border-blue-500 bg-white flex items-center justify-center shadow-lg hover:bg-blue-50 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h2l1-2h12l1 2h2v12H3V7z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 11a3 3 0 100 6 3 3 0 000-6z" />
-                    </svg>
-                </button>
 
-                <p id="previewStatus" class="text-sm text-gray-500 mt-2 mt-24 text-center hidden"></p>
-                <p id="status" class="mt-4 text-gray-700 text-center hidden"></p>
+            <!-- Capture Button -->
+            <button id="captureBtn" 
+                    class="absolute bottom-4 right-1/2 transform translate-x-1/2 w-16 h-16 rounded-full border-4 border-blue-500 bg-white flex items-center justify-center shadow-lg hover:bg-blue-50 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h2l1-2h12l1 2h2v12H3V7z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 11a3 3 0 100 6 3 3 0 000-6z" />
+                </svg>
+            </button>
+
+            <p id="previewStatus" class="text-sm text-gray-500 mt-2 mt-24 text-center hidden"></p>
+            <p id="status" class="mt-4 text-gray-700 text-center hidden"></p>
         </div>
 
         <!-- Preview Foto -->
@@ -42,7 +44,7 @@
 
 <script>
 const orderCode = '{{ $order->order_code }}';
-const layoutCount = 4;
+const layoutCount = {{ $layout }};
 let currentIndex = 0;
 
 // -----------------------------
@@ -55,7 +57,7 @@ for (let i = 1; i <= layoutCount; i++) {
     slot.textContent = i;
     slot.dataset.index = i;
 
-    // Tombol recapture (tulisan)
+    // Tombol recapture (default kosong)
     const recBtn = document.createElement('button');
     recBtn.innerText = "Recapture";
     recBtn.className = "absolute top-1 right-1 bg-white/90 px-2 py-1 rounded text-xs font-semibold hover:bg-white transition";
@@ -91,10 +93,9 @@ ws.onopen = () => {
 ws.onmessage = function(event) {
     let msg;
     try {
-        msg = JSON.parse(event.data); // coba parse
+        msg = JSON.parse(event.data);
     } catch (e) {
         document.getElementById("status").innerText = event.data;
-        console.log("Plain text message:", event.data);
         return;
     }
 
@@ -117,6 +118,11 @@ ws.onmessage = function(event) {
         recBtn.addEventListener("click", () => recapture(slot));
 
         slot.dataset.filled = "true";
+
+        // update counter judul
+        document.getElementById("fotoCounter").innerText = 
+            document.querySelectorAll("#previewContainer [data-filled='true']").length;
+
         if (currentIndex < layoutCount - 1) currentIndex++;
     } else if (msg.message) {
         document.getElementById("status").innerText = msg.message;
@@ -134,9 +140,13 @@ function recapture(slot) {
     const photoId = slot.dataset.photoId;
     const slotIndex = parseInt(slot.dataset.index) - 1;
 
+    if (slotIndex >= layoutCount) {
+        alert("Slot ini tidak tersedia untuk layout " + layoutCount);
+        return;
+    }
+
     startCountdown(() => {
         if (!photoId) {
-            // Kosong → langsung capture
             currentIndex = slotIndex;
             ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
             return;
@@ -154,20 +164,17 @@ function recapture(slot) {
         .then(res => res.json())
         .then(res => {
             if (res.message) {
-                // kosongkan slot
                 slot.innerHTML = slot.dataset.index;
                 slot.dataset.filled = "";
                 slot.dataset.photoId = "";
                 currentIndex = slotIndex;
 
-                // tambahkan tombol recapture lagi
                 const recBtn = document.createElement('button');
                 recBtn.innerText = "Recapture";
                 recBtn.className = "absolute top-1 right-1 bg-white/90 px-2 py-1 rounded text-xs font-semibold hover:bg-white transition";
                 slot.appendChild(recBtn);
                 recBtn.addEventListener("click", () => recapture(slot));
 
-                // langsung capture ulang
                 ws.send(JSON.stringify({ action: "capture", order_code: orderCode }));
             }
         });
@@ -178,9 +185,12 @@ function recapture(slot) {
 // Tombol Capture Manual
 // -----------------------------
 const captureBtn = document.getElementById("captureBtn");
-const countdownOverlay = document.getElementById("countdownOverlay");
 
 captureBtn.addEventListener("click", function() {
+    if (currentIndex >= layoutCount) {
+        alert("Foto sudah mencapai batas maksimal (" + layoutCount + ")");
+        return;
+    }
     startCountdown(() => ws.send(JSON.stringify({ action: "capture", order_code: orderCode })));
 });
 
@@ -193,7 +203,6 @@ function startCountdown(callback) {
     const poseText = document.getElementById("poseText");
     const countdownOverlay = document.getElementById("countdownOverlay");
 
-    // Sembunyikan teks pose, tampilkan countdown
     poseText.classList.add("hidden");
     countdownOverlay.textContent = counter;
     countdownOverlay.classList.remove("opacity-0");
@@ -206,7 +215,6 @@ function startCountdown(callback) {
         } else {
             clearInterval(interval);
 
-            // Sembunyikan countdown, tampilkan teks lagi
             countdownOverlay.textContent = "";
             countdownOverlay.classList.remove("opacity-100");
             countdownOverlay.classList.add("opacity-0");
@@ -216,6 +224,5 @@ function startCountdown(callback) {
         }
     }, 1000);
 }
-
 </script>
 @endsection
