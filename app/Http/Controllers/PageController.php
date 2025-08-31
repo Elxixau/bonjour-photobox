@@ -82,7 +82,7 @@ class PageController extends Controller
             $durasi = 600; // default 10 menit  
         }
 
-        return view('pages.sesi_foto', compact('order', 'orientasi', 'layout', 'durasi'));
+        return view('digicam.index', compact('order', 'orientasi', 'layout', 'durasi'));
     }
 
     public function getQrData($order_code)
