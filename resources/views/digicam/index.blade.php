@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-4 text-center">DigiCam Capture via WebSocket</h1>
+    <h1 class="text-2xl text-white font-bold mb-4 text-center">Sesi Foto</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="">
@@ -10,13 +10,13 @@
                 <!-- Live Preview -->
                 <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
                 
-                <!-- Countdown Overlay (untuk live video saja) -->
+                <!-- Countdown Overlay -->
                 <div id="countdownOverlay" 
                     class="absolute inset-0 flex items-center justify-center text-white text-6xl font-bold bg-black/40 opacity-0 transition-opacity duration-500 pointer-events-none rounded-lg">
                 </div>
 
             </div>
-            <!-- Capture Button (Floating Icon) -->
+            <!-- Capture Button -->
                 <button id="captureBtn" 
                         class="absolute bottom-4 right-1/2 transform translate-x-1/2 w-16 h-16 rounded-full border-4 border-blue-500 bg-white flex items-center justify-center shadow-lg hover:bg-blue-50 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -31,7 +31,6 @@
 
         <!-- Preview Foto -->
         <div>
-            <h2 class="text-lg font-semibold mb-2">Preview Foto</h2>
             <div id="previewContainer" class="grid grid-cols-2 gap-4 relative"></div>
         </div>
     </div>
