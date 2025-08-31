@@ -9,8 +9,10 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="">
             <div class="relative w-full h-64 bg-black/80 rounded-lg flex items-center justify-center">
-                <!-- Video Live Preview -->
+                <!-- 
                 <video id="liveVideo" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
+                -->
+                
                 
                 <p id="poseText" class="absolute text-white p-2 text-xl font-bold">
                     Berpose dan menghadap ke kamera
