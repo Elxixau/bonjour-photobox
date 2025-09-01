@@ -12,14 +12,13 @@
 <script>
     const durationSeconds = {{ ($order->waktu ?? 5) * 60 }};
     const orderCode = '{{ $order->order_code }}';
-
     const statusDiv = document.getElementById('statusMessage');
 
     document.getElementById('startSessionBtn').addEventListener('click', async ()=>{
-        statusDiv.innerText = ''; // reset
+        statusDiv.innerText = '';
 
         try {
-            const response = await fetch('http://192.168.1.46:8091', {
+            const response = await fetch('http://192.168.1.2:8091', {
                 method: 'POST',
                 headers: { 'Content-Type':'application/json' },
                 body: JSON.stringify({ order_code: orderCode, duration: durationSeconds })
@@ -32,8 +31,8 @@
             }
 
             statusDiv.innerText = 'Perintah photobooth berhasil dikirim ke PC lokal';
-        } catch (err) {
-            statusDiv.innerText = `Error: ${err.message}. Pastikan Node.js Agent sedang berjalan dan port 8091 terbuka.`;
+        } catch(err){
+            statusDiv.innerText = `Error: ${err.message}. Pastikan Node.js Agent berjalan dan port 8091 terbuka.`;
             console.error(err);
         }
     });
