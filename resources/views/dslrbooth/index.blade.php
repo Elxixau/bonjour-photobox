@@ -9,17 +9,18 @@
 </div>
 
 <script>
-    const durationSeconds = {{ ($order->waktu ?? 5) * 60 }};
+    const durationSeconds = {{ $order->waktu*60 ?? 300 }};
+const orderCode = '{{ $order->order_code }}';
 
-    document.getElementById('startSessionBtn').addEventListener('click', () => {
-        if(window.electronAPI){
-            // Buat koneksi WS dan kirim durasi
-            window.electronAPI.connectWS('ws://localhost:8090');
-            window.electronAPI.sendStartSession(durationSeconds);
-            alert("Sesi photobooth dimulai!");
-        } else {
-            console.warn("Electron overlay tidak terdeteksi. Jalankan run-photobooth.bat di PC Photobooth.");
-        }
+document.getElementById('startSessionBtn').addEventListener('click', ()=>{
+    fetch('http://localhost:8091', {
+        method:'POST',
+        body: JSON.stringify({order_code: orderCode, duration: durationSeconds})
+    }).then(()=>{
+        alert('Perintah photobooth dikirim ke PC lokal');
+    }).catch(()=>{
+        alert('Pastikan Node.js Agent sudah berjalan di PC Photobooth');
     });
+});
 </script>
 @endsection
