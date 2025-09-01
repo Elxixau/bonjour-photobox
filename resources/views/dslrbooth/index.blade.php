@@ -4,37 +4,35 @@
 <div class="container text-center mt-10">
     <h1>Photobooth Session</h1>
     <p>Sesi akan berjalan selama {{ $order->waktu ?? 5 }} menit</p>
-
-    <button id="startSessionBtn">Mulai Sesi</button>
-    <div id="statusMessage" class="mt-4 text-red-500"></div>
+<button id="startBtn">Mulai Photobooth</button>
 </div>
 
-<script>
-    const durationSeconds = {{ ($order->waktu ?? 5) * 60 }};
-    const orderCode = '{{ $order->order_code }}';
-    const statusDiv = document.getElementById('statusMessage');
 
-    document.getElementById('startSessionBtn').addEventListener('click', async ()=>{
-        statusDiv.innerText = '';
+ <script>
+        const PHOTBOOTH_WS = 'ws://192.168.1.100:8090'; // IP PC Photobooth
+        const orderCode = "{{ $order->order_code }}";
+        const durationSeconds = {{ $order->waktu ?? 300 }}; // ambil dari DB
 
-        try {
-            const response = await fetch('http://192.168.1.2:8091', {
-                method: 'POST',
-                headers: { 'Content-Type':'application/json' },
-                body: JSON.stringify({ order_code: orderCode, duration: durationSeconds })
-            });
+        document.getElementById('startBtn').addEventListener('click', () => {
+            const ws = new WebSocket(PHOTBOOTH_WS);
 
-            if(!response.ok){
-                const text = await response.text();
-                statusDiv.innerText = `Gagal mengirim perintah: ${response.status} ${text}`;
-                return;
-            }
+            ws.onopen = () => {
+                ws.send(JSON.stringify({
+                    type:'startSession',
+                    order_code: orderCode,
+                    duration: durationSeconds
+                }));
+            };
 
-            statusDiv.innerText = 'Perintah photobooth berhasil dikirim ke PC lokal';
-        } catch(err){
-            statusDiv.innerText = `Error: ${err.message}. Pastikan Node.js Agent berjalan dan port 8091 terbuka.`;
-            console.error(err);
-        }
-    });
-</script>
+            ws.onmessage = e => {
+                const data = JSON.parse(e.data);
+                if(data.type==='timer'){
+                    console.log('Remaining:', data.remaining);
+                }
+                if(data.type==='sessionEnd'){
+                    alert('Sesi photobooth selesai!');
+                }
+            };
+        });
+    </script>
 @endsection
