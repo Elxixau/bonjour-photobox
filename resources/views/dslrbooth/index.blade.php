@@ -5,9 +5,9 @@
     <h1>Photobooth Session</h1>
     <p>Sesi akan berjalan selama {{ $order->waktu ?? 5 }} menit</p>
 
-   <button id="startSessionBtn">Mulai Sesi</button>
-</div>
 <button id="startSessionBtn">Mulai Sesi</button>
+</div>
+
 
 <script>
     const durationSeconds = {{ $order->waktu * 60 ?? 300 }};
