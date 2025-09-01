@@ -1,51 +1,51 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="h-screen flex items-center justify-center bg-black text-white">
-    <div id="overlay" class="text-center hidden">
-        <h1 class="text-5xl font-bold mb-4">Waktu Tersisa</h1>
-        <div id="timer" class="text-6xl">0</div>
-    </div>
+<div class="container text-center mt-10">
+    <h1>Photobooth Session</h1>
+    <p>Sesi akan berjalan selama {{ $order->waktu ?? 5 }} menit</p>
+    <button id="startBtn">Mulai Photobooth</button>
 </div>
 
 <script>
-    let ws = new WebSocket("ws://localhost:8090");
+    const WS_URL = 'ws://localhost:8090'; // ganti dengan IP PC Photobooth
+    const orderCode = "{{ $order->order_code }}";
+    const durationMinutes = {{ $order->waktu ?? 5 }};
 
-    ws.onopen = function() {
-        console.log("Terhubung ke Node.js server");
-    };
+    let ws;
 
-    ws.onmessage = function(event) {
-        let data = JSON.parse(event.data);
+    document.getElementById('startBtn').addEventListener('click', () => {
+        if(!ws || ws.readyState !== WebSocket.OPEN){
+            ws = new WebSocket(WS_URL);
 
-        if (data.type === "start") {
-            // tampilkan overlay dan mulai hitung mundur
-            document.getElementById("overlay").classList.remove("hidden");
-            startCountdown(data.time);
+            ws.onopen = () => {
+                console.log('Connected to Node.js Agent');
+                sendStartSession();
+            };
+
+            ws.onmessage = e => {
+                const data = JSON.parse(e.data);
+                if(data.type === 'timer'){
+                    console.log('Remaining:', data.remaining);
+                }
+                if(data.type === 'sessionEnd'){
+                    alert('Sesi photobooth selesai!');
+                }
+            };
+
+            ws.onerror = e => console.error('WebSocket error:', e);
+            ws.onclose = () => console.log('WebSocket closed');
+        } else {
+            sendStartSession();
         }
+    });
 
-        if (data.type === "stop") {
-            // sembunyikan overlay
-            document.getElementById("overlay").classList.add("hidden");
-        }
-    };
-
-    function startCountdown(seconds) {
-        let timer = document.getElementById("timer");
-        let remaining = seconds;
-
-        timer.textContent = remaining;
-
-        let interval = setInterval(() => {
-            remaining--;
-            timer.textContent = remaining;
-
-            if (remaining <= 0) {
-                clearInterval(interval);
-                ws.send(JSON.stringify({ type: "done" }));
-                document.getElementById("overlay").classList.add("hidden");
-            }
-        }, 1000);
+    function sendStartSession(){
+        ws.send(JSON.stringify({
+            type: 'startSession',
+            order_code: orderCode,
+            duration: durationMinutes
+        }));
     }
 </script>
 @endsection
