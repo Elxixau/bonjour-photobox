@@ -1,22 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Photobooth Timer</title>
-    <style>
-        #timer {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.5);
-            color: white;
-            padding: 10px 20px;
-            font-size: 24px;
-            border-radius: 10px;
-        }
-    </style>
-</head>
-<body>
-    <button onclick="startSession()">Mulai Sesi</button>
+@extends('layouts.app')
+
+@section('content')
+ <h1>Photobooth WebApp</h1>
+  <button onclick="startSession()">Mulai Sesi</button>
     <div id="timer">60</div>
 
     <script>
@@ -41,5 +27,4 @@
             }
         };
     </script>
-</body>
-</html>
+@endsection
