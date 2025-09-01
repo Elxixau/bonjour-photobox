@@ -123,6 +123,11 @@ class PageController extends Controller
         ]);
     }
 
+     public function dslrbooth()
+    {
+    
+        return view('dslrbooth.index');
+    }
     
 
 }
