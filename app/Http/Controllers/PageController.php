@@ -123,11 +123,14 @@ class PageController extends Controller
         ]);
     }
 
-     public function dslrbooth()
-    {
-    
-        return view('dslrbooth.index');
-    }
+
+public function dslrbooth($orderId)
+{
+    $order = Order::findOrFail($orderId);
+
+    return view('dslrbooth.index', compact('order'));
+}
+
     
 
 }

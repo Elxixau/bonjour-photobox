@@ -1,30 +1,24 @@
 @extends('layouts.app')
 
 @section('content')
- <h1>Photobooth WebApp</h1>
-  <button onclick="startSession()">Mulai Sesi</button>
-    <div id="timer">60</div>
+<div class="container text-center mt-10">
+    <h1>Photobooth Session</h1>
+    <p>Sesi akan berjalan selama {{ $order->waktu ?? 5 }} menit</p>
 
-    <script>
-        const ws = new WebSocket('ws://localhost:8080');
+    <button id="startSessionBtn">Mulai Sesi</button>
+</div>
 
-        ws.onopen = () => console.log('Connected to PC agent');
+<script>
+    const durationSeconds = {{ $order->waktu * 60 ?? 300 }};
 
-        function startSession() {
-            ws.send(JSON.stringify({ type: 'startSession', duration: 60 }));
+    document.getElementById('startSessionBtn').addEventListener('click', () => {
+        if(window.electronAPI){
+            window.electronAPI.sendStartSession(durationSeconds);
+            window.electronAPI.startTimer('ws://localhost:8090');
+            alert("Sesi photobooth dimulai!");
+        } else {
+            alert("Electron overlay tidak terdeteksi.");
         }
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-
-            if (data.type === 'timer') {
-                document.getElementById('timer').innerText = data.remaining;
-            }
-
-            if (data.type === 'sessionEnd') {
-                alert('Sesi photobooth selesai!');
-                // window.location.href = "/next-page"; // redirect halaman berikutnya
-            }
-        };
-    </script>
+    });
+</script>
 @endsection
