@@ -123,10 +123,9 @@ class PageController extends Controller
         ]);
     }
 
-
-public function dslrbooth($orderId)
+public function dslrbooth($order_code)
 {
-    $order = Order::findOrFail($orderId);
+    $order = Order::where('order_code', $order_code)->firstOrFail();
 
     return view('dslrbooth.index', compact('order'));
 }

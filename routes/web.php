@@ -13,7 +13,7 @@ use App\Http\Controllers\CloudGalleryController;
 |--------------------------------------------------------------------------
 */
 Route::get('/', fn() => redirect()->route('kategori.select'))->name('home');
-Route::get('/dslrbooth/{order}', [PageController::class, 'dslrbooth']);
+Route::get('/dslrbooth/{order_code}', [PageController::class, 'dslrbooth']);
 Route::get('/kategori', [PageController::class, 'pilihKategori'])->name('kategori.select');
 Route::post('/kategori', [PageController::class, 'storeKategori'])->name('kategori.set');
 
