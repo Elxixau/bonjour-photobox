@@ -19,7 +19,7 @@
         statusDiv.innerText = ''; // reset
 
         try {
-            const response = await fetch('http://localhost:8091', {
+            const response = await fetch('http://192.168.1.46:8091', {
                 method: 'POST',
                 headers: { 'Content-Type':'application/json' },
                 body: JSON.stringify({ order_code: orderCode, duration: durationSeconds })
