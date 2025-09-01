@@ -9,7 +9,7 @@
 
 
  <script>
-        const PHOTBOOTH_WS = 'ws://192.168.1.100:8090'; // IP PC Photobooth
+        const PHOTBOOTH_WS = 'ws://localhost:8090'; // IP PC Photobooth
         const orderCode = "{{ $order->order_code }}";
         const durationSeconds = {{ $order->waktu ?? 300 }}; // ambil dari DB
 
