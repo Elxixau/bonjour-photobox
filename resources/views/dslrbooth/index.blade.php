@@ -11,7 +11,7 @@
  <script>
         const PHOTBOOTH_WS = 'ws://localhost:8090'; // IP PC Photobooth
         const orderCode = "{{ $order->order_code }}";
-        const durationSeconds = {{ $order->waktu ?? 300 }}; // ambil dari DB
+        const durationSeconds =" {{ $order->waktu }}"; // ambil dari DB
 
         document.getElementById('startBtn').addEventListener('click', () => {
             const ws = new WebSocket(PHOTBOOTH_WS);
