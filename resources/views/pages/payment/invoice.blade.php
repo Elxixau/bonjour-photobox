@@ -88,7 +88,7 @@
         ws.onopen = () => {
             console.log("Connected to booth");
             ws.send(JSON.stringify({
-                command: "start_session",
+                command: "start",
                 type: "Print" // bisa diganti "GIF", "Video", dll
             }));
         };
