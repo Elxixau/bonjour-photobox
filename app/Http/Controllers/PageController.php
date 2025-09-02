@@ -104,11 +104,7 @@ class PageController extends Controller
     public function preview($orderCode)
     {
         $file = session('exported_file'); // file foto terakhir yang diexport
-        if (!$file) {
-            return redirect()->route('sticker.select', $orderCode)
-                            ->with('error', 'Foto belum diexport');
-        }
-
+  
         $order = Order::where('order_code', $orderCode)->firstOrFail();
         $qr = $order->qrAccess;
 
