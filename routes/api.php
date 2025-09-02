@@ -15,4 +15,5 @@ Route::post('/callback', [PaymentController::class, 'callback']);
 
 Route::post('/upload-photo', [DigicamController::class, 'uploadPhoto']);
 
+Route::post('/delete-photo', [DigicamController::class, 'deletePhoto']);
 
