@@ -109,7 +109,7 @@
                 if(data.type === 'sessionEnd'){
                         
                
-                        window.location.href = "/preview/{{$order->id}}";
+                        window.location.href = "/preview/{$orderCode}";
                 }
             };
 
