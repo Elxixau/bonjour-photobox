@@ -107,7 +107,9 @@
                     console.log('Remaining:', data.remaining);
                 }
                 if(data.type === 'sessionEnd'){
+                        
                     alert('Sesi photobooth selesai!');
+                        window.location.href = "/welcome";
                 }
             };
 
