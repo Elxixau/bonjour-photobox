@@ -70,12 +70,7 @@
 
 </div>
 
-    <a 
-      >
-    </a>
-
-     <button id="startBtn"   class="flex items-center rounded-xl border-2 border-black bg-gray-300 text-black p-2 mt-8">
-        
+     <button id="startBtn" class="flex items-center rounded-xl border-2 border-black bg-gray-300 text-black p-2 mt-8">
             Next
             <div class="border-2 border-black bg-gray-300 rounded-md ml-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -86,50 +81,27 @@
 </div>
 
 <script>
-    const WS_URL = 'ws://localhost:8090'; // ganti dengan IP PC Photobooth
-    const orderCode = "{{ $order->order_code }}";
-    const durationMinutes = {{ $order->waktu ?? 5 }};
+    document.getElementById("startBtn").addEventListener("click", function () {
+        // ganti dengan IP PC lokal kamu di booth
+        const ws = new WebSocket("ws://192.168.1.100:8090");
 
-    let ws;
+        ws.onopen = () => {
+            console.log("Connected to booth");
+            ws.send(JSON.stringify({
+                command: "start_session",
+                type: "Print" // bisa diganti "GIF", "Video", dll
+            }));
+        };
 
-    document.getElementById('startBtn').addEventListener('click', () => {
-        if(!ws || ws.readyState !== WebSocket.OPEN){
-            ws = new WebSocket(WS_URL);
+        ws.onmessage = (event) => {
+            console.log("Response:", event.data);
+            alert("Booth started: " + event.data);
+        };
 
-            ws.onopen = () => {
-                console.log('Connected to Node.js Agent');
-                sendStartSession();
-            };
-
-            ws.onmessage = e => {
-                const data = JSON.parse(e.data);
-                if(data.type === 'timer'){
-                    console.log('Remaining:', data.remaining);
-                }
-                if(data.type === 'sessionEnd'){
-                        
-                    alert('Sesi photobooth selesai!');
-                        window.location.href = "/welcome";
-                }
-            };
-
-            ws.onerror = e => console.error('WebSocket error:', e);
-            ws.onclose = () => console.log('WebSocket closed');
-        } else {
-            sendStartSession();
-        }
+        ws.onerror = (err) => {
+            console.error("WebSocket error:", err);
+            alert("Gagal terhubung ke booth");
+        };
     });
-
-    function sendStartSession(){
-        ws.send(JSON.stringify({
-            type: 'startSession',
-            order_code: orderCode,
-            duration: durationMinutes
-        }));
-    }
 </script>
-
-    
 @endsection
-
-
