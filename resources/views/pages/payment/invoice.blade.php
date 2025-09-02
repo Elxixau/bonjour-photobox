@@ -83,7 +83,7 @@
 <script>
     document.getElementById("startBtn").addEventListener("click", function () {
         // ganti dengan IP PC lokal kamu di booth
-        const ws = new WebSocket("ws://192.168.1.100:8090");
+        const ws = new WebSocket("ws://localhost:8090");
 
         ws.onopen = () => {
             console.log("Connected to booth");
