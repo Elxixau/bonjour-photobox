@@ -5,9 +5,13 @@
     Preview Hasil Foto
 </h1>
 
-<div class="flex justify-center mb-6">
-    <img id="finalPhoto" src="{{ asset('storage/' . $file) }}" 
-         class="border-2 border-black rounded-lg shadow-lg max-w-lg max-h-lg object-contain">
+<div class="flex flex-wrap justify-center gap-4 mb-6">
+    @forelse($prints as $print)
+        <img src="{{ asset('storage/' . $print->img_path) }}" 
+             class="border-2 border-black rounded-lg shadow-lg max-w-xs max-h-xs object-contain">
+    @empty
+        <p>No print files uploaded yet for this order.</p>
+    @endforelse
 </div>
 
 <!-- Tombol untuk QR & Cetak -->

@@ -100,23 +100,29 @@ class PageController extends Controller
             'qr_url'     => $qr->url_cloud,
         ]);
     }
+public function preview($orderCode)
+{
+    // Ambil order
+    $order = Order::where('order_code', $orderCode)->firstOrFail();
+    $qr = $order->qrAccess;
 
-    public function preview($orderCode)
-    {
-       
-        $order = Order::where('order_code', $orderCode)->firstOrFail();
-        $qr = $order->qrAccess;
+    // Ambil semua foto print untuk order_code ini
+    $prints = CloudGallery::where('order_id', $order->id)
+        ->where('type', 'print')
+        ->where('img_path', 'like', $orderCode . '/print/%') // hanya folder print dari order ini
+        ->orderBy('id', 'asc')
+        ->get();
 
-        return view('pages.preview', [
-            'order'      => $order,       // tambahkan variabel $order
-            'order_code' => $orderCode,
- 
-            'qr'         => $qr ? [
-                'image' => asset('storage/' . $qr->img_path),
-                'url'   => $qr->url_cloud,
-            ] : null
-        ]);
-    }
+    return view('pages.preview', [
+        'order'      => $order,
+        'order_code' => $orderCode,
+        'prints'     => $prints, // collection semua print
+        'qr'         => $qr ? [
+            'image' => asset('storage/' . $qr->img_path),
+            'url'   => $qr->url_cloud,
+        ] : null
+    ]);
+}
 
 public function dslrbooth($order_code)
 {
