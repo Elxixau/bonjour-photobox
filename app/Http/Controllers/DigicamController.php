@@ -44,6 +44,39 @@ class DigicamController extends Controller
         ]);
     }
 
+    public function uploadPrint(Request $request)
+{
+    $orderCode = $request->input('order_code');
+    $file = $request->file('file');
+
+    if (!$orderCode || !$file) {
+        return response()->json(['error' => 'Order code atau file tidak ada'], 400);
+    }
+
+    $order = Order::where('order_code', $orderCode)->first();
+    if (!$order) {
+        return response()->json(['error' => 'Order tidak ditemukan'], 404);
+    }
+
+    // folder khusus print
+    $folderPath = $orderCode . '/print';
+    $fileName = time() . '_' . $file->getClientOriginalName();
+    $filePath = $file->storeAs($folderPath, $fileName, 'public');
+
+    $gallery = CloudGallery::create([
+        'order_id' => $order->id,
+        'img_path' => $filePath,
+        'type' => 'print',
+    ]);
+
+    return response()->json([
+        'message' => 'File print berhasil disimpan',
+        'data' => $gallery,
+        'url' => Storage::url($filePath),
+    ]);
+}
+
+
     public function deletePhoto(Request $request)
 {
     $orderCode = $request->input('order_code');

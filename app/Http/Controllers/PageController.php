@@ -103,15 +103,14 @@ class PageController extends Controller
 
     public function preview($orderCode)
     {
-        $file = session('exported_file'); // file foto terakhir yang diexport
-  
+       
         $order = Order::where('order_code', $orderCode)->firstOrFail();
         $qr = $order->qrAccess;
 
         return view('pages.preview', [
             'order'      => $order,       // tambahkan variabel $order
             'order_code' => $orderCode,
-            'file'       => $file,
+ 
             'qr'         => $qr ? [
                 'image' => asset('storage/' . $qr->img_path),
                 'url'   => $qr->url_cloud,

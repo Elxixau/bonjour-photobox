@@ -14,6 +14,7 @@ Route::get('/user', function (Request $request) {
 Route::post('/callback', [PaymentController::class, 'callback']);
 
 Route::post('/upload-photo', [DigicamController::class, 'uploadPhoto']);
+Route::post('/upload-print', [DigicamController::class, 'uploadPrint']);
 
 Route::post('/delete-photo', [DigicamController::class, 'deletePhoto']);
 
