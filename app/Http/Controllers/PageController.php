@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Kategori;
 use App\Models\Order;
+use App\Models\CloudGallery;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
