@@ -108,12 +108,12 @@ public function preview($orderCode)
     $qr = $order->qrAccess;
 
     // Ambil semua foto print untuk order_code ini
+       // ambil semua file print untuk order_code ini
     $prints = CloudGallery::where('order_id', $order->id)
-        ->where('type', 'print')
-        ->where('img_path', 'like', $orderCode . '/print/%') // hanya folder print dari order ini
+        ->where('img_path', 'like', $orderCode . '/print/%') // cukup filter folder print
         ->orderBy('id', 'asc')
         ->get();
-
+        
     return view('pages.preview', [
         'order'      => $order,
         'order_code' => $orderCode,
