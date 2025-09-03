@@ -7,7 +7,7 @@
 
 <div class="flex flex-wrap justify-center gap-4 mb-6">
     @forelse($prints as $print)
-        <img src="{{ asset('storage/' . $print->img_path) }}" 
+        <img id="finalPhoto" src="{{ asset('storage/' . $print->img_path) }}" 
              class="border-2 border-black rounded-lg shadow-lg max-w-xs max-h-xs object-contain">
     @empty
         <p>No print files uploaded yet for this order.</p>
@@ -26,7 +26,7 @@
         Cetak Foto
     </button>
 
-    <a href="{{route('welcome')}}"   class="px-6 py-3  bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300">
+    <a href="{{route('panduan')}}"   class="px-6 py-3  bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300">
         Selesai
     </a>
 </div>
