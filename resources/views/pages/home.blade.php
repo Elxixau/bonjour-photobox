@@ -6,9 +6,6 @@
 @endphp
 
 <div id="cameraContainer" class="fixed inset-0 bg-black flex items-center justify-center overflow-hidden">
-    <!-- Live Preview -->
-    <video id="video" autoplay playsinline muted class="absolute"></video>
-
     <!-- Watermark -->
     <div class="absolute inset-x-0 top-4 z-20 pointer-events-none flex justify-center">
         <div class="text-center select-none">
@@ -27,71 +24,4 @@
         Tap layar untuk melanjutkan
     </a>
 </div>
-
-<style>
-#video {
-    transform-origin: center center;
-}
-</style>
-
-<script>
-const video = document.getElementById('video');
-let stream, track;
-
-async function startCamera() {
-    try {
-        stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: "user",
-                width: { ideal: 1920 },
-                height: { ideal: 1080 },
-                frameRate: { ideal: 60 }
-            },
-            audio: false
-        });
-
-        video.srcObject = stream;
-        track = stream.getVideoTracks()[0];
-
-        const settings = track.getSettings();
-        console.log("Camera settings:", settings);
-
-        const isPortrait = "{{ $orientasi }}" === 'portrait';
-
-        if (isPortrait) {
-            video.style.transform = 'rotate(90deg)';
-            fitPortraitFullHeight(settings);
-            window.addEventListener('resize', () => fitPortraitFullHeight(settings));
-        } else {
-            video.style.transform = 'rotate(0deg)';
-            video.style.width = '100%';
-            video.style.height = '100%';
-            video.style.objectFit = 'cover';
-        }
-
-    } catch (err) {
-        console.error("Gagal mengakses kamera:", err);
-        alert("Tidak bisa mengakses kamera");
-    }
-}
-
-/**
- * Portrait: full height, width disesuaikan
- */
-function fitPortraitFullHeight(settings) {
-    const container = document.getElementById('cameraContainer');
-    const ch = container.clientHeight;
-
-    // Swap karena rotate 90deg
-    const vidWidth = settings.height;
-    const vidHeight = settings.width;
-
-    const scale = ch / vidHeight; // scale berdasarkan height
-    video.style.height = ch + 'px';
-    video.style.width = vidWidth * scale + 'px';
-    video.style.objectFit = 'contain'; // menjaga proporsi
-}
-
-window.addEventListener('DOMContentLoaded', startCamera);
-</script>
 @endsection
