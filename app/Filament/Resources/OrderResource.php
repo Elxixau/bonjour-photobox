@@ -39,15 +39,19 @@ class OrderResource extends Resource
                     ->required(),
                 Select::make('kategori_id')
                     ->label('Kategori')
-                    ->options(\App\Models\Kategori::all()->pluck('nama', 'id'))
-                    ->required(),
-                Select::make('user_id')
-                    ->label('User')
-                    ->options(\App\Models\User::all()->pluck('email', 'id'))
+                    ->options(
+                        \App\Models\Kategori::query()
+                            ->pluck('nama', 'id')
+                            ->filter(fn ($value) => !is_null($value))
+                    )
                     ->required(),
                 Select::make('qr_id')
                     ->label('QR Access')
-                    ->options(\App\Models\QrAccess::all()->pluck('qr_id', 'id'))
+                    ->options(
+                        \App\Models\QrAccess::query()
+                            ->pluck('qr_id', 'id')
+                            ->filter(fn ($value) => !is_null($value))
+                    )
                     ->nullable(),
                 TextInput::make('harga_paket')
                     ->numeric()
