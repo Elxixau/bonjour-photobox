@@ -46,13 +46,13 @@ class OrderResource extends Resource
                     )
                     ->required(),
                 Select::make('qr_id')
-                    ->label('QR Access')
-                    ->options(
-                        \App\Models\QrAccess::query()
-                            ->pluck('qr_id', 'id')
-                            ->filter(fn ($value) => !is_null($value))
-                    )
-                    ->nullable(),
+    ->label('QR Access')
+    ->options(
+        \App\Models\QrAccess::all()
+            ->mapWithKeys(fn ($qr) => [$qr->id => $qr->img_path ?? 'Unknown'])
+    )
+    ->nullable(),
+
                 TextInput::make('harga_paket')
                     ->numeric()
                     ->required(),
