@@ -35,7 +35,7 @@
     </div>
 </div>
 
-<div id="stepButton" class="flex w-full justify-between mt-2">
+<div id="stepButton" class="flex w-full justify-between ">
     <button id="prevBtn" class="px-4 py-2 rounded-md border-2 border-black text-black font-semibold bg-gray-400">Back</button>
     <button id="nextBtn" class="px-4 py-2 rounded-md border-2 border-black text-black font-semibold bg-white">Next</button>
 </div>
