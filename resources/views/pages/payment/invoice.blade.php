@@ -30,56 +30,34 @@
 <div class="w-full mx-auto bg-white border-2 border-black rounded-lg p-4 font-serif text-sm mb-4">
     <div class="px-4 text-lg font-reguler">
         <span class="font-bold"> Reminder :</span>
-          <span> Pakai total waktu untuk melakukan tahap awal sesi foto hingga akhir, <span class="font-bold">sisihkan 1 menit</span>  untuk sampai pada tahap akhir</span>
+          <span> Pakai total waktu untuk melakukan tahap awal sesi foto hingga akhir, 
+            <span class="font-bold">sisihkan 1 menit</span> untuk sampai pada tahap akhir</span>
     </div>
 </div>
 
-<div class="w-full mx-auto bg-white border-2 border-black rounded-lg p-4 font-serif text-sm mb-4">
-  <div class="flex items-start space-x-3 px-4 text-lg">
-    <div class="w-6 h-6 flex items-center justify-center border-2 border-black rounded-full mr-2">
-      ✓
+{{-- Tutorial Section --}}
+<div id="tutorial" class="w-full mx-auto bg-white border-2 border-black rounded-lg p-4 font-serif text-sm mb-4">
+    <div class="tutorial-step hidden" data-step="1">
+        <img src="{{asset('images/tutorial1.png')}}" class="mx-auto mb-4 w-64" alt="Step 1">
+        <p class="text-center">1. Duduklah dengan nyaman di depan kamera.</p>
     </div>
-    <span>Pilih frame yang akan dipakai sesuai layout yang diinginkan.</span>
-  </div>
+    <div class="tutorial-step hidden" data-step="2">
+        <img src="{{asset('images/tutorial2.png')}} " class="mx-auto mb-4 w-64" alt="Step 2">
+        <p class="text-center">2. Tekan tombol untuk memulai pengambilan foto.</p>
+    </div>
+    <div class="tutorial-step hidden" data-step="3">
+        <img src="/images/tutorial3.png" class="mx-auto mb-4 w-64" alt="Step 3">
+        <p class="text-center">3. Tunggu timer selesai dan cek hasil foto Anda.</p>
+    </div>
+
+    <div class="flex justify-between mt-4">
+        <button id="prevBtn" class="px-4 py-2 border rounded bg-gray-200">Back</button>
+        <button id="nextBtn" class="px-4 py-2 border rounded bg-blue-500 text-white">Next</button>
+    </div>
 </div>
 
-<div class="w-full mx-auto bg-white border-2 border-black rounded-lg p-4 font-serif text-sm mb-4">
-  <div class="flex items-start space-x-3 px-4 text-lg">
-    <div class="w-6 h-6 flex items-center justify-center border-2 border-black rounded-full mr-2">
-      ✓
-    </div>
-    <span>Lakukan sesi foto dengan pose yang menarik untuk mengisi setiap layout foto.</span>
-  </div>
-</div>
-
-<div class="w-full mx-auto bg-white border-2 border-black rounded-lg p-4 font-serif text-sm mb-4">
-  <div class="flex items-start space-x-3 px-4 text-lg">
-    <div class="w-6 h-6 flex items-center justify-center border-2 border-black rounded-full mr-2">
-      ✓
-    </div>
-    <span>Jika ingin mengulang foto sentuh tombol X di pojok kiri saat sesi foto.</span>
-  </div>
-</div>
-
-<div class="w-full mx-auto bg-white border-2 border-black rounded-lg p-4 font-serif text-sm mb-4">
-  <div class="flex items-start space-x-3 px-4 text-lg">
-    <div class="w-6 h-6 flex items-center justify-center border-2 border-black rounded-full mr-2">
-      ✓
-    </div>
-    <span>Pilih Filter yang telah tersedia setelah melakukan sesi foto.</span>
-  </div>
-</div>
-
-<div class="w-full mx-auto bg-white border-2 border-black rounded-lg p-4 font-serif text-sm mb-4">
-  <div class="flex items-start space-x-3 px-4 text-lg">
-    <div class="w-6 h-6 flex items-center justify-center border-2 border-black rounded-full mr-2">
-      ✓
-    </div>
-    <span>Selanjutnya hasil foto dengan frame yang terpilih akan muncul pada screen.</span>
-  </div>
-</div>
-
-<button id="startBtn"   class="flex items-center rounded-md border-2 border-black bg-white text-black font-semibold py-2 p-4 mt-8">
+{{-- Start Button (hidden until tutorial selesai) --}}
+<button id="startBtn" class="hidden flex items-center rounded-md border-2 border-black bg-white text-black font-semibold py-2 p-4 mt-8">
     Mulai Sesi Foto
 </button>
 
@@ -91,6 +69,44 @@
 
     let ws;
 
+    // -----------------
+    // Tutorial Handling
+    // -----------------
+    let currentStep = 1;
+    const totalSteps = document.querySelectorAll('.tutorial-step').length;
+
+    function showStep(step) {
+        document.querySelectorAll('.tutorial-step').forEach(el => el.classList.add('hidden'));
+        document.querySelector(`.tutorial-step[data-step="${step}"]`).classList.remove('hidden');
+        document.getElementById('prevBtn').style.display = step === 1 ? 'none' : 'inline-block';
+        document.getElementById('nextBtn').innerText = step === totalSteps ? 'Selesai' : 'Next';
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', () => {
+        if(currentStep > 1){
+            currentStep--;
+            showStep(currentStep);
+        }
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+        if(currentStep < totalSteps){
+            currentStep++;
+            showStep(currentStep);
+        } else {
+            // selesai tutorial
+            document.getElementById('tutorial').classList.add('hidden');
+            document.getElementById('startBtn').classList.remove('hidden');
+        }
+    });
+
+    // init first step
+    showStep(currentStep);
+
+
+    // -----------------
+    // WebSocket Handling
+    // -----------------
     document.getElementById('startBtn').addEventListener('click', () => {
         if(!ws || ws.readyState !== WebSocket.OPEN){
             ws = new WebSocket(WS_URL);
@@ -126,7 +142,4 @@
     }
 </script>
 
-    
 @endsection
-
-
