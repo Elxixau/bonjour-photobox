@@ -2,7 +2,7 @@
 
 @section('content')
   
-<div class="w-full mx-auto bg-white border-2 border-black rounded-lg p-8 font-serif text-sm mb-4">
+<div class="w-full mx-auto bg-white border-2 border-black rounded-lg px-4 py-4 font-serif text-sm mb-4">
     
     <div class="w-full flex justify-between items-center gap-2">
         <p><span class="font-semibold">Order-Id:</span> {{ $order->order_code }}</p>
@@ -27,37 +27,43 @@
     </div>
 </div>
 
-<div class="w-full mx-auto bg-white border-2 border-black rounded-lg p-4 font-serif text-sm mb-4">
-    <div class="px-4 text-lg font-reguler">
-        <span class="font-bold"> Reminder :</span>
-          <span> Pakai total waktu untuk melakukan tahap awal sesi foto hingga akhir, 
-            <span class="font-bold">sisihkan 1 menit</span> untuk sampai pada tahap akhir</span>
-    </div>
-</div>
 
 {{-- Tutorial Section --}}
 <div id="tutorial" class="w-full mx-auto bg-white border-2 border-black rounded-lg p-4 font-serif text-sm mb-4">
     <div class="tutorial-step hidden" data-step="1">
-        <img src="{{asset('image/tutorial/tutorial1.png')}}" class="mx-auto mb-4 w-64" alt="Step 1">
-        <p class="text-center">1. Duduklah dengan nyaman di depan kamera.</p>
+        <img src="{{asset('image/tutorial/tutorial1.png')}}" 
+             class="mx-auto mb-4 w-full max-h-72 object-contain" alt="Step 1">
+        <p class="text-center text-xl font-bold">Pilih frame tersedia yang diinginkan, lalu tekan next.</p>
     </div>
     <div class="tutorial-step hidden" data-step="2">
-        <img src="{{asset('image/tutorial/tutorial2.png')}} " class="mx-auto mb-4 w-64" alt="Step 2">
-        <p class="text-center">2. Tekan tombol untuk memulai pengambilan foto.</p>
+        <img src="{{asset('image/tutorial/tutorial2.png')}}" 
+             class="mx-auto mb-4 w-full max-h-72 object-contain" alt="Step 2">
+        <p class="text-center text-xl font-bold">Selanjutnya, berpose untuk melakukan capture. Tap tombol X pada pojok kiri layar.</p>
     </div>
     <div class="tutorial-step hidden" data-step="3">
-        <img src="/images/tutorial3.png" class="mx-auto mb-4 w-64" alt="Step 3">
-        <p class="text-center">3. Tunggu timer selesai dan cek hasil foto Anda.</p>
+        <img src="{{asset('image/tutorial/tutorial3.png')}}" 
+             class="mx-auto mb-4 w-full max-h-72 object-contain" alt="Step 3">
+        <p class="text-center text-xl font-bold">Pilih efek filter yang diinginkan, lalu tekan next.</p>
     </div>
-
-    <div class="flex justify-between mt-4">
-        <button id="prevBtn" class="px-4 py-2 border rounded bg-gray-200">Back</button>
-        <button id="nextBtn" class="px-4 py-2 border rounded bg-blue-500 text-white">Next</button>
+      <div class="tutorial-step hidden" data-step="4">
+        <img src="{{asset('image/tutorial/tutorial4.png')}}" 
+             class="mx-auto mb-4 w-full max-h-72 object-contain" alt="Step 3">
+        <p class="text-center text-xl font-bold">Tahap terakhir, pada tahap ini tekan selesai untuk menyelesaikan sesi foto.</p>
     </div>
+</div>
+<div class="w-full mx-auto bg-white border-2 border-black rounded-lg p-4 font-serif text-sm mb-4">
+    <div class="px-4 text-lg font-reguler">
+        <span class="font-bold"> Reminder :</span>
+          <span> Jangan menekan tombol selesai atau bagian timer sampai waktu sampai pada tahap terakhir sesi foto.</span>
+    </div>
+</div>
+<div id="stepButton" class="flex w-full justify-between mt-2">
+    <button id="prevBtn" class="px-4 py-2 rounded-md border-2 border-black text-black font-semibold bg-gray-400">Back</button>
+    <button id="nextBtn" class="px-4 py-2 rounded-md border-2 border-black text-black font-semibold bg-white">Next</button>
 </div>
 
 {{-- Start Button (hidden until tutorial selesai) --}}
-<button id="startBtn" class="hidden flex items-center rounded-md border-2 border-black bg-white text-black font-semibold py-2 p-4 mt-8">
+<button id="startBtn" class="hidden rounded-md border-2 border-black bg-white text-black font-semibold py-2 p-4 mt-4">
     Mulai Sesi Foto
 </button>
 
@@ -79,7 +85,7 @@
         document.querySelectorAll('.tutorial-step').forEach(el => el.classList.add('hidden'));
         document.querySelector(`.tutorial-step[data-step="${step}"]`).classList.remove('hidden');
         document.getElementById('prevBtn').style.display = step === 1 ? 'none' : 'inline-block';
-        document.getElementById('nextBtn').innerText = step === totalSteps ? 'Selesai' : 'Next';
+        document.getElementById('nextBtn').innerText = step === totalSteps ? 'Next' : 'Next';
     }
 
     document.getElementById('prevBtn').addEventListener('click', () => {
@@ -95,7 +101,7 @@
             showStep(currentStep);
         } else {
             // selesai tutorial
-            document.getElementById('tutorial').classList.add('hidden');
+            document.getElementById('stepButton').classList.add('hidden');
             document.getElementById('startBtn').classList.remove('hidden');
         }
     });
