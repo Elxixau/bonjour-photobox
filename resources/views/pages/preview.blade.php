@@ -10,23 +10,24 @@
         <img id="finalPhoto" src="{{ asset('storage/' . $print->img_path) }}" 
              class="border-2 border-black rounded-lg shadow-lg max-w-xs max-h-xs object-contain">
     @empty
-        <p>No print files uploaded yet for this order.</p>
+        <p class="text-gray-500">Belum ada foto print untuk order ini.  
+        <br><span class="text-sm">Mengecek foto baru...</span></p>
     @endforelse
 </div>
 
 <!-- Tombol untuk QR & Cetak -->
 <div class="flex justify-center gap-4">
     <button onclick="showQRModal()" 
-            class="px-6 py-3  bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300">
- Scan QR
+            class="px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition">
+        Scan QR
     </button>
 
     <button onclick="printPhoto()" 
-            class="px-6 py-3  bg-white text-black font-semibold py-2 px-4 rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300">
+            class="px-6 py-3 bg-white text-black font-semibold rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition">
         Cetak Foto
     </button>
 
-    <a href="{{route('panduan')}}"   class="px-6 py-3  bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition duration-300">
+    <a href="{{route('panduan')}}" class="px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg border-2 border-black shadow-black shadow-[4px_4px_0_0] hover:shadow-[6px_6px_0_0] transition">
         Selesai
     </a>
 </div>
@@ -46,12 +47,11 @@
                 <p class="text-red-500">QR Code belum tersedia</p>
             @endif
         </div>
-        <div class="text-center text-sm text-gray-700"> Scan QR untuk mengakses cloud gallery anda</div>
+        <div class="text-center text-sm text-gray-700">Scan QR untuk mengakses cloud gallery anda</div>
     </div>
 </div>
 
 <script>
-    
 function showQRModal() {
     document.getElementById('qrModal').classList.remove('hidden');
 }
@@ -60,10 +60,14 @@ function closeQRModal() {
     document.getElementById('qrModal').classList.add('hidden');
 }
 
-
-   function printPhoto() {
-    const jumlahCetak = {{ $order->jumlah_cetak ?? 1 }}; // ambil dari order
-    const photoUrl = document.getElementById('finalPhoto').src;
+function printPhoto() {
+    const jumlahCetak = {{ $order->jumlah_cetak ?? 1 }};
+    const photoEl = document.getElementById('finalPhoto');
+    if (!photoEl) {
+        alert("Belum ada foto untuk dicetak!");
+        return;
+    }
+    const photoUrl = photoEl.src;
 
     const printWindow = window.open('', '', 'width=400,height=600');
 
@@ -100,9 +104,9 @@ function closeQRModal() {
                         if (counter < max) {
                             window.print();
                             counter++;
-                            setTimeout(doPrint, 1000); // jeda 1 detik antar print
+                            setTimeout(doPrint, 1000);
                         } else {
-                            window.close(); // tutup otomatis setelah selesai
+                            window.close();
                         }
                     }
                     document.getElementById('photo').onload = doPrint;
@@ -113,5 +117,12 @@ function closeQRModal() {
 
     printWindow.document.close();
 }
+
+@if($prints->isEmpty())
+    // Kalau belum ada foto, auto reload setiap 5 detik
+    setTimeout(() => {
+        location.reload();
+    }, 2000);
+@endif
 </script>
 @endsection

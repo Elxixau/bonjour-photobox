@@ -2,7 +2,7 @@
 
 @section('content')
   <script type="text/javascript"
-      src="https://app.sandbox.midtrans.com/snap/snap.js"
+  src="https://app.midtrans.com/snap/snap.js"
       data-client-key="{{config('midtrans.client_key')}}"></script>
     <!-- Note: replace with src="https://app.midtrans.com/snap/snap.js" for Production environment -->
 <div class="max-w-4xl mx-auto bg-white border-2 border-black rounded-lg p-8 font-serif text-sm">

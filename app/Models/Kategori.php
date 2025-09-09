@@ -11,6 +11,13 @@ class Kategori extends Model
     protected $table = 'kategori'; 
     protected $fillable = ['nama', 'harga', 'waktu', 'jumlah_cetak','orientasi'];
 
+    
+    // Relasi ke Background (one-to-many)
+    public function backgrounds()
+    {
+        return $this->hasMany(KategoriBackground::class, 'kategori_id');
+    }
+    
 // Relasi ke Addon (one-to-many)
     public function addons()
     {

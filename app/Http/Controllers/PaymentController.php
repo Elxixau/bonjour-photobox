@@ -91,7 +91,7 @@ class PaymentController extends Controller
     // Midtrans config
     \Midtrans\Config::$serverKey = config('midtrans.server_key');
     \Midtrans\Config::$clientKey = config('midtrans.client_key'); // penting kalau pakai Snap.js
-    \Midtrans\Config::$isProduction = false;  // false untuk sandbox
+    \Midtrans\Config::$isProduction = true;  // false untuk sandbox
     \Midtrans\Config::$isSanitized = true;
     \Midtrans\Config::$is3ds = true;
 
