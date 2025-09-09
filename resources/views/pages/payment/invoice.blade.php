@@ -32,22 +32,22 @@
 <div id="tutorial" class="w-full mx-auto bg-white border-2 border-black rounded-lg p-4 font-serif text-sm mb-4">
     <div class="tutorial-step hidden" data-step="1">
         <img src="{{asset('image/tutorial/tutorial1.png')}}" 
-             class="mx-auto mb-4 w-full max-h-72 object-contain" alt="Step 1">
+             class="mx-auto mb-4 w-full  object-contain" alt="Step 1">
         <p class="text-center text-xl font-bold">Pilih frame tersedia yang diinginkan, lalu tekan next.</p>
     </div>
     <div class="tutorial-step hidden" data-step="2">
         <img src="{{asset('image/tutorial/tutorial2.png')}}" 
-             class="mx-auto mb-4 w-full max-h-72 object-contain" alt="Step 2">
+             class="mx-auto mb-4 w-full object-contain" alt="Step 2">
         <p class="text-center text-xl font-bold">Selanjutnya, berpose untuk melakukan capture. Tap tombol X pada pojok kiri layar.</p>
     </div>
     <div class="tutorial-step hidden" data-step="3">
         <img src="{{asset('image/tutorial/tutorial3.png')}}" 
-             class="mx-auto mb-4 w-full max-h-72 object-contain" alt="Step 3">
+             class="mx-auto mb-4 w-full  object-contain" alt="Step 3">
         <p class="text-center text-xl font-bold">Pilih efek filter yang diinginkan, lalu tekan next.</p>
     </div>
       <div class="tutorial-step hidden" data-step="4">
         <img src="{{asset('image/tutorial/tutorial4.png')}}" 
-             class="mx-auto mb-4 w-full max-h-72 object-contain" alt="Step 3">
+             class="mx-auto mb-4 w-full  object-contain" alt="Step 3">
         <p class="text-center text-xl font-bold">Tahap terakhir, pada tahap ini tekan selesai untuk menyelesaikan sesi foto.</p>
     </div>
 </div>
