@@ -14,7 +14,7 @@ class KategoriController extends Controller
      */
     public function index()
     {
-        return response()->json(Kategori::all());
+        return response()->json(Kategori::with('addons')->get());
     }
 
     /**
