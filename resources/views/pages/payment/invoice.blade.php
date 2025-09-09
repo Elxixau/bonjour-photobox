@@ -38,11 +38,11 @@
 {{-- Tutorial Section --}}
 <div id="tutorial" class="w-full mx-auto bg-white border-2 border-black rounded-lg p-4 font-serif text-sm mb-4">
     <div class="tutorial-step hidden" data-step="1">
-        <img src="{{asset('images/tutorial/tutorial1.png')}}" class="mx-auto mb-4 w-64" alt="Step 1">
+        <img src="{{asset('image/tutorial/tutorial1.png')}}" class="mx-auto mb-4 w-64" alt="Step 1">
         <p class="text-center">1. Duduklah dengan nyaman di depan kamera.</p>
     </div>
     <div class="tutorial-step hidden" data-step="2">
-        <img src="{{asset('images/tutorial/tutorial2.png')}} " class="mx-auto mb-4 w-64" alt="Step 2">
+        <img src="{{asset('image/tutorial/tutorial2.png')}} " class="mx-auto mb-4 w-64" alt="Step 2">
         <p class="text-center">2. Tekan tombol untuk memulai pengambilan foto.</p>
     </div>
     <div class="tutorial-step hidden" data-step="3">
