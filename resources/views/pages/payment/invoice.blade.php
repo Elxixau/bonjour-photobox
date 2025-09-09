@@ -2,30 +2,7 @@
 
 @section('content')
   
-<div class="w-full mx-auto bg-white border-2 border-black rounded-lg px-4 py-4 font-serif text-sm mb-4">
-    
-    <div class="w-full flex justify-between items-center gap-2">
-        <p><span class="font-semibold">Order-Id:</span> {{ $order->order_code }}</p>
-        <p><span class="font-semibold">Status:</span> 
-             @if($order->status === 'pending')
-                <span class="text-yellow-600 font-semibold">Pending</span>
-            @elseif($order->status === 'success')
-                <span class="text-green-600 font-semibold">Paid</span>
-            @else
-                <span class="text-gray-600 font-semibold capitalize">{{ $order->status }}</span>
-            @endif
-        </p>
-    </div>
 
-    <div class="flex justify-between py-1">
-        <span>Total Waktu</span>
-        <span>{{ $order->waktu }} menit</span>
-    </div>
-    <div class="border-t-2 border-black pt-4 flex justify-between text-base font-bold">
-        <span>Total Harga</span>
-        <span>Rp {{ number_format($order->total_harga, 0, ',', '.') }}</span>
-    </div>
-</div>
 
 
 {{-- Tutorial Section --}}
@@ -52,11 +29,12 @@
     </div>
 </div>
 <div class="w-full mx-auto bg-white border-2 border-black rounded-lg p-4 font-serif text-sm mb-4">
-    <div class="px-4 text-lg font-reguler">
-        <span class="font-bold"> Reminder :</span>
+    <div class="px-4 text-base ">
+        <span class="font-black"> Reminder :</span>
           <span> Jangan menekan tombol selesai atau bagian timer sampai waktu sampai pada tahap terakhir sesi foto.</span>
     </div>
 </div>
+
 <div id="stepButton" class="flex w-full justify-between mt-2">
     <button id="prevBtn" class="px-4 py-2 rounded-md border-2 border-black text-black font-semibold bg-gray-400">Back</button>
     <button id="nextBtn" class="px-4 py-2 rounded-md border-2 border-black text-black font-semibold bg-white">Next</button>
