@@ -19,5 +19,5 @@ Route::post('/upload-print', [DigicamController::class, 'uploadPrint']);
 Route::post('/delete-photo', [DigicamController::class, 'deletePhoto']);
 
 Route::get('/kategori', [KategoriController::class, 'index']);
-Route::get('/kategori/{$id}', [KategoriController::class, 'show']);
+Route::get('/kategori/{id}', [KategoriController::class, 'show']);
 
