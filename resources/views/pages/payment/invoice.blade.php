@@ -38,7 +38,7 @@
     <div class="tutorial-step hidden" data-step="2">
         <img src="{{asset('image/tutorial/tutorial2.png')}}" 
              class="mx-auto mb-4 w-full object-contain" alt="Step 2">
-        <p class="text-center text-xl font-bold">Selanjutnya, berpose untuk melakukan capture. Tap tombol X pada pojok kiri layar.</p>
+        <p class="text-center text-xl font-bold">Selanjutnya melakukan capture gambar. Tap tombol X pada pojok kiri layar untuk capture ulang.</p>
     </div>
     <div class="tutorial-step hidden" data-step="3">
         <img src="{{asset('image/tutorial/tutorial3.png')}}" 
